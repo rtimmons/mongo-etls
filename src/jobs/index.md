@@ -1,3 +1,19 @@
+Structure documentation:
+
+- one mars job per subdir of `jobs`
+- each subdir has a codeowners file stating who owns it
+- each step of the job has its own step subdir
+- each step subdir has an `index.sql` file
+
+Structure notes:
+
+- subdirs with just index.sql file is to allow for additional step metadata, docs, examples, etc to be defined at a later point.
+
+MARS jobs naming strategy:
+
+- one "normalize" job per data source
+- the steps etl the data into `dev_prod_metrics_v1.${data_source}_${table}_raw`
+- jobs going from `_raw` are named `derived_${dest_prefix}` TODO this is..weird
 
 
 Presto task type destinations:
