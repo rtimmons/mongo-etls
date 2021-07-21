@@ -35,7 +35,7 @@ WITH src as (
         evergreen_metrics_atlas.versions.events as src
 )
 SELECT
-    *
+    src.*
 FROM    
     src
     left outer join     -- we have all of src
