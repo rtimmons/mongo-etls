@@ -33,7 +33,6 @@ with
                 field,
                 "fromstring",
                 "tostring",
-                dense_rank() over () as "rank",
                 if(created = (
                     -- is first time going from "fromstring" to "tostring"
                     select  min(created)
@@ -165,7 +164,6 @@ with
                     and   cs."fromstring" = 'Build Failure Genesis'
                     and   cs."tostring" = 'Build Failures'
                     and   cs.first_time_same_transition = 'yes'
-                    and   "rank" = 1
                 ) as converted_date, -- aka processed_date
                 (
                     select created
@@ -174,7 +172,6 @@ with
                     and   cs.field = 'assignee'
                     and   cs."tostring" is not null
                     and   cs.first_time_not_null = 'yes'
-                    and   "rank" = 1
                 ) as first_team_assigned_date,
                 (
                     select created
@@ -183,7 +180,6 @@ with
                     and   cs.field = 'status'
                     and   cs."tostring" = 'In Progress'
                     and   cs.first_time_to_value = 'yes'
-                    and   "rank" = 1
                 ) as began_investigation_date,
 
                 (
@@ -193,7 +189,6 @@ with
                     and   cs.field = 'status'
                     and   cs."tostring" = 'Waiting for bug fix'
                     and   cs.first_time_to_value = 'yes'
-                    and   "rank" = 1
                 ) as wfbf_date,
         
                 (
@@ -203,7 +198,6 @@ with
                     and   cs.field = 'status'
                     and   cs."tostring" = 'Stuck'
                     and   cs.first_time_to_value = 'yes'
-                    and   "rank" = 1
                 ) as stuck_date,
         
                 (
@@ -213,7 +207,6 @@ with
                     and   cs.field = 'priority'
                     and   cs."tostring" = 'Trivial - P5'
                     and   cs.first_time_to_value = 'yes'
-                    and   "rank" = 1
                 ) as trivial_date,
                 
         
@@ -224,7 +217,6 @@ with
                     and   cs.field = 'status'
                     and   cs."tostring" = 'Closed'
                     and   cs.first_time_to_value = 'yes'
-                    and   "rank" = 1
                 ) as closed_date
 
                 -- nice to have maybe?
