@@ -2,7 +2,7 @@
 --   https://github.com/10gen/pm-resources/blob/411dcbbb4e02ab12c7a9f0af94e9427a53f80ae8/python_scripts/load_bf_data.py#L45
 -- in sql
 with
-    histories as (
+    histories_t as (
         select
             id,
             issueid,
@@ -10,9 +10,15 @@ with
             cast(json_parse(items) 
                 as array(row(field varchar, toString varchar,
                                "from" varchar, fromString varchar, 
-                               "to" varchar, fieldtype varchar))) as deltas
-        from    
+                               "to" varchar, fieldtype varchar))) as deltas,
+            rank() over (partition by id order by _sdc_sequence) as rnk
+        from
             stagingawsdatacatalog.raw_jira.dw__jira__changelogs_full_history
+    ),
+    histories as (
+        select id, issueid, created, deltas
+        from histories_t
+        where rnk = 1
     ),
     all_deltas as (
         select  hs.id as id,
@@ -103,7 +109,7 @@ with
                 ), 'yes', 'no') as first_time_to_value
         from    all_deltas ds
     ),
-    aissues as (
+    aissues_t as (
         select  
                 id                          as id,
                 key                         as key,
@@ -217,7 +223,9 @@ with
                     and   cs.field = 'status'
                     and   cs."tostring" = 'Closed'
                     and   cs.first_time_to_value = 'yes'
-                ) as closed_date
+                ) as closed_date,
+
+                rank() over(partition by id order by _sdc_sequence desc) as rnk
 
                 -- nice to have maybe?
                 /*
@@ -228,6 +236,11 @@ with
                 */
         from
             stagingawsdatacatalog.raw_jira.dw__jira__issues issues
+    ),
+    aissues as (
+        select *
+        from aissues_t
+        where rnk = 1
     )
 select
     aissues.*,
