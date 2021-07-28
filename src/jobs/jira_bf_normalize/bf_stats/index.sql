@@ -7,11 +7,12 @@ with
             id,
             issueid,
             created,
+            -- TODO: any better to put this in the lower `histories` view?
             cast(json_parse(items) 
                 as array(row(field varchar, toString varchar,
                                "from" varchar, fromString varchar, 
                                "to" varchar, fieldtype varchar))) as deltas,
-            rank() over (partition by id order by _sdc_sequence) as rnk
+            rank() over (partition by id order by "_history_date" desc, _sdc_sequence desc) as rnk
         from
             stagingawsdatacatalog.raw_jira.dw__jira__changelogs_full_history
     ),
@@ -33,7 +34,7 @@ with
                 unnest(deltas) as ds
     ),
     first_changeds as (
-        select  id,
+        select  distinct -- some jira bugs e.g. 143693
                 issueid,
                 from_iso8601_timestamp(created) as created,
                 field,
@@ -252,3 +253,4 @@ select
     to_milliseconds(closed_date - wfbf_date) / 3600000 as time_waiting_for_fix
 from aissues
 where aissues.key like 'BF%'
+
