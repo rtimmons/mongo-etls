@@ -111,7 +111,7 @@ with
         from    all_deltas ds
     ),
     aissues_t as (
-        select  
+        select
                 id                          as id,
                 key                         as key,
                 fields__status__name        as status,
@@ -125,6 +125,10 @@ with
                     0
                 ) as score,
             
+                -- TODO
+                'unknown' as team,
+                'unknown' as severity,
+                'unknown' as is_release_blocker,
                 /*
                 if(fields__customfield_20463='nan', null, fields__customfield_20463) as severity_types,
                 */
@@ -162,8 +166,6 @@ with
                 */
         
                 (
-                    -- TODO: is this right?
-                    -- showing as null for issueid=572968
                     select created
                     from  first_changeds cs
                     where cs.issueid = issues.id
@@ -244,6 +246,33 @@ with
         where rnk = 1
     )
 select
+aissues.key as key_pr,
+bf.key as key_tpm,
+aissues.status as status_pr,
+bf.status as status_tpm,
+aissues.resolution as resolution_pr,
+bf.resolution as resolution_tpm,
+aissues.assignee as assignee_pr,
+bf.assignee as assignee_tpm,
+aissues.team as team_pr,
+bf.team as team_tpm,
+aissues.evg_projects as evg_projects_pr,
+bf.evg_projects as evg_projects_tpm,
+aissues.score as score_pr,
+bf.score as score_tpm,
+aissues.severity as severity_pr,
+bf.severity as severity_tpm,
+aissues.is_release_blocker as is_release_blocker_pr,
+bf.is_release_blocker as is_release_blocker_tpm,
+aissues.converted_date as converted_date_pr,
+bf.converted_date as converted_date_tpm,
+aissues.first_team_assigned_date as first_team_assigned_date_pr,
+bf.first_team_assigned_date as first_team_assigned_date_tpm,
+bf.time_buildbaron_triage as time_buildbaron_triage_tpm,
+to_milliseconds(aissues.first_team_assigned_date - aissues.converted_date) / 3600000 as time_buildbaron_triage_pr,
+aissues.closed_date as closed_date_pr,
+bf.closed_date as closed_date_tpm
+/*
     aissues.*,
     to_milliseconds(first_team_assigned_date - converted_date) / 3600000 as time_buildbaron_triage,
     to_milliseconds(began_investigation_date - first_team_assigned_date) / 3600000 as time_to_begin_investigation,
@@ -251,6 +280,8 @@ select
     to_milliseconds(stuck_date - began_investigation_date) / 3600000 as time_investigated_to_stuck,
     to_milliseconds(trivial_date - began_investigation_date) / 3600000 as time_investigated_to_trivial,
     to_milliseconds(closed_date - wfbf_date) / 3600000 as time_waiting_for_fix
+*/
 from aissues
+, tpm_build_failures_atlas.buildfailures.bf bf
 where aissues.key like 'BF%'
-
+and bf.key = aissues.key
