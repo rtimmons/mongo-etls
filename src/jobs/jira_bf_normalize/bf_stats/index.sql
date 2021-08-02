@@ -150,8 +150,6 @@ with
                     0
                 ) as score,
 
-                fields__assignee__name as assignee,
-
                 (
                     select team
                     from   people_aliases
@@ -267,13 +265,36 @@ with
         from
             stagingawsdatacatalog.raw_jira.dw__jira__issues issues
     ),
-    aissues as (
+    aissues_v as (
         select *
         from aissues_t
         where rnk = 1
+    ),
+    aissues as (
+        select vs.*, project
+        from aissues_v vs,
+             unnest(evg_projects) as projects(project)
     )
 select
-    aissues.*,
+    aissues.issue_id as issue_id,
+    aissues.key as key,
+    aissues.project as project,
+    aissues.status as status,
+    aissues.resolution as resolution,
+    aissues.assignee as assignee,
+    aissues.score as score,
+    aissues.team as team,
+    aissues.severity as severity,
+    aissues.is_release_blocker as is_release_blocker,
+    aissues.on_required_buildvariant as on_required_buildvariant,
+    aissues.on_suggested_buildvariant as on_suggested_buildvariant,
+    aissues.is_investigated as is_investigated,
+    aissues.created_date as created_date,
+    aissues.converted_date as converted_date,
+    aissues.first_team_assigned_date as first_team_assigned_date,
+    aissues.began_investigation_date as began_investigation_date,
+    aissues.wfbf_date as wfbf_date,
+
     abs(to_milliseconds(first_team_assigned_date - converted_date) / 60000) as time_buildbaron_triage_mins,
     abs(to_milliseconds(began_investigation_date - first_team_assigned_date) / 60000) as time_to_begin_investigation_mins,
     abs(to_milliseconds(began_investigation_date - wfbf_date) / 60000) as time_investigated_mins,
