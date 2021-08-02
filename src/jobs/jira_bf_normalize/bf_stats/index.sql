@@ -138,15 +138,11 @@ with
                 fields__resolution__name    as resolution,
                 fields__assignee__name      as assignee,
 
-                cast(json_parse(
-                    replace(replace(replace(replace(replace(
-                        fields__customfield_14278,
-                        '''', '"'),
-                        'True','true'),
-                        'False','false'),
-                        'None', '[]'),
-                        'nan', '[]')
-                ) as array(varchar)) as evg_projects,
+                cast(
+                    json_parse(
+                        nullif(nullif(fields__customfield_14278, 'None'), 'nan')
+                    ) as array(varchar)
+                ) as evg_projects,
 
                 -- if(fields__customfield_12950 like '%perf%',true,false) as on_perf_project,
                 coalesce(
@@ -164,17 +160,14 @@ with
 
 
                 -- TODO fix based on serde (don't use `like` and nees to be deserialized)
-                cast(json_parse(
-                    replace(replace(replace(replace(replace(
-                        fields__customfield_20463,
-                        '''', '"'),
-                        'True','true'),
-                        'False','false'),
-                        'None', '[]'),
-                        'nan', '[]')
-                ) as array(row(
-                    self varchar, disabled boolean, id varchar, value varchar
-                ))) as severity,
+                cast(
+                    json_parse(
+                        nullif(nullif(fields__customfield_20463, 'nan'), 'None')
+                    ) as array(
+                        row(self varchar, disabled boolean, id varchar, value varchar
+                    ))
+                ) as severity,
+
                 (
                     fields__customfield_20463 like '%Release Blocking%' and
                     fields__customfield_20463 not like '%Not Release Blocking%'
@@ -289,3 +282,4 @@ select
     abs(to_milliseconds(closed_date - wfbf_date) / 60000) as time_waiting_for_fix_mins
 from aissues
 where aissues.key like 'BF%'
+
