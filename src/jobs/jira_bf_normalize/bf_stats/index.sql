@@ -157,16 +157,15 @@ with
                 ) as team,
 
 
-                -- TODO fix based on serde (don't use `like` and nees to be deserialized)
                 cast(
                     json_parse(
                         nullif(nullif(fields__customfield_20463, 'nan'), 'None')
                     ) as array(
-                        row(self varchar, disabled boolean, id varchar, value varchar
-                    ))
-                ) as severity,
+                        row(self varchar, disabled boolean, id varchar, value varchar)
+                )) as severity_r,
 
                 (
+                    -- TODO fix based on serde (don't use `like` and nees to be deserialized)
                     fields__customfield_20463 like '%Release Blocking%' and
                     fields__customfield_20463 not like '%Not Release Blocking%'
                 ) as is_release_blocker,
@@ -178,18 +177,18 @@ with
                     0
                 ) > 100 as is_hot,
                 */
-        
+
                 fields__customfield_14277 like '%-required%' as on_required_buildvariant,
                 fields__customfield_14277 like '%-suggested%'as on_suggested_buildvariant,
-        
+
                 (
                     fields__status__name = 'Closed' or
                     fields__status__name = 'Waiting for bug fix' or
                     fields__status__name = 'Resolved'
                 ) as is_investigated,
-        
+
                 from_iso8601_timestamp(fields__created) as created_date,
-        
+
                 (
                     select distinct created
                     from  first_changeds cs
@@ -284,7 +283,7 @@ select
     aissues.assignee as assignee,
     aissues.score as score,
     aissues.team as team,
-    aissues.severity as severity,
+    try(aissues.severity_r[1].value) as severity,
     aissues.is_release_blocker as is_release_blocker,
     aissues.on_required_buildvariant as on_required_buildvariant,
     aissues.on_suggested_buildvariant as on_suggested_buildvariant,
