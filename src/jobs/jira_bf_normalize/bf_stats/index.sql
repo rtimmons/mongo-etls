@@ -262,7 +262,7 @@ with
                 fields__customfield_16350 as count_of_linked_failures
                 */
         from
-            stagingawsdatacatalog.raw_jira.dw__jira__issues issues
+            awsdatacatalog.raw_jira.dw__jira__issues issues
     ),
     aissues_v as (
         select *
