@@ -34,7 +34,7 @@ with
                                "to" varchar, fieldtype varchar))) as deltas,
             rank() over (partition by id order by "_history_date" desc, _sdc_sequence desc) as rnk
         from
-            stagingawsdatacatalog.raw_jira.dw__jira__changelogs_full_history
+            awsdatacatalog.raw_jira.dw__jira__changelogs_full_history
     ),
     histories as (
         select id, issueid, created, deltas
