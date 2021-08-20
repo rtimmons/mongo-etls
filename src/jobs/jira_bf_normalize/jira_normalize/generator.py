@@ -1,23 +1,11 @@
 import json
 from typing import Tuple, Optional
+import csv
 
-
-_MISSING_FIELDS = set(st[8:] for st in [   # lol this is a mess
-        f"fields__customfield_{it}" for it in [
-            "14750", "14751", "16152", "16563", "17456", "17457", "18151", "18255", "18554", "19352",
-            "19476", "19958", "20057", "20181", "20191", "20259", "20361", "20396", "20477", "20757",
-            "13354", "16151", "20258", "10030", "10041", "11050", "11653", "11850", "11851", "11852",
-            "11855", "11860", "12752", "14351", "16254", "16556", "16559", "16561", "16564", "17550",
-            "17552", "17764", "18062", "18550", "18551", "18552", "18553", "18850", "18851", "18857",
-            "18956", "19255", "19460", "19461", "19477", "19752", "20050", "20051", "20052", "20053",
-            "20060", "20061", "20062", "20179", "20180", "20182", "20183", "20184", "20185", "20186",
-            "20187", "20188", "20189", "20190", "20251", "20252", "20253", "20254", "20256", "20257",
-            "20261", "20262", "20360", "20362", "20363", "20364", "20365", "20366", "20367", "20368",
-            "20369", "20370", "20478", "20479", "20480", "20758", "20759", "20760", "20761", "20762",
-            "10165", "17482", "17483", "18450", "19957",
-    ]
-])
-
+with open("/Users/rtimmons/Desktop/fields.csv") as handle:
+    reader = csv.DictReader(handle)
+    prefix = "fields__"
+    _KNOWN_FIELDS = set([row["Column"][len(prefix):] for row in reader])
 
 def _array_to_row(fd_types: dict) -> str:
     fds = [f"\"{k}\" {v}" for k, v in fd_types.items()]
@@ -70,8 +58,10 @@ class Field:
     @property
     def ignore(self) -> bool:
         is_custom = self.data["custom"]
-        force_ignored = self.data["id"] in _MISSING_FIELDS
-        return not is_custom or force_ignored
+        known_field =  self.data["id"] in _KNOWN_FIELDS
+        if not known_field:
+            print(f"{self.data['id']} not in known fields")
+        return not is_custom or not known_field
 
     @property
     def id(self) -> str:
@@ -156,17 +146,19 @@ class Field:
             .replace(")", "_")\
             .replace("__", "_")\
             .replace("__", "_")
-        return f"{replaced}_cf"
+        return f"\"{replaced}_cf\""
 
     @property
     def select(self) -> str:
-        return f"{self.id} as {self.column_name}_{self.id_num}_orig, "\
-               f"{self.castable} as {self.column_name}, "\
-               f"-- {self.data['name']}"
+        return (
+            # f"{self.id} as {self.column_name}_{self.id_num}_orig, "
+            f"{self.castable} as {self.column_name}, "
+            f"-- {self.data['name']}"
+        )
 
 
 if __name__ == "__main__":
-    with open("/Users/rtimmons/Desktop/jira_fields.json") as handle:
+    with open("/Users/rtimmons/Desktop/jira_fields_prod.json") as handle:
         fields = [Field(it) for it in json.load(handle)]
 
     not_ignored = [field for field in fields if not field.ignore]
