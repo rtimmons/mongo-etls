@@ -1,11 +1,15 @@
+import os
 import json
 from typing import Tuple, Optional
 import csv
 
-with open("/Users/rtimmons/Desktop/fields.csv") as handle:
+MY_DIR = os.path.dirname(__file__)
+
+with open(os.path.join(MY_DIR, "fields_prod.csv")) as handle:
     reader = csv.DictReader(handle)
     prefix = "fields__"
     _KNOWN_FIELDS = set([row["Column"][len(prefix):] for row in reader])
+
 
 def _array_to_row(fd_types: dict) -> str:
     fds = [f"\"{k}\" {v}" for k, v in fd_types.items()]
@@ -158,7 +162,7 @@ class Field:
 
 
 if __name__ == "__main__":
-    with open("/Users/rtimmons/Desktop/jira_fields_prod.json") as handle:
+    with open(os.path.join(MY_DIR, "jira_fields_prod.json")) as handle:
         fields = [Field(it) for it in json.load(handle)]
 
     not_ignored = [field for field in fields if not field.ignore]
