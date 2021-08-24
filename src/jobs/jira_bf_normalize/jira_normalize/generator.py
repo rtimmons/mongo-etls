@@ -157,26 +157,42 @@ class JiraCustomField:
         )
 
 
-_CUSTOM_FIELD_REX = re.compile(r"^fields__customfield_(\d+)(?:__(.*?))?(?:__(.*))?$")
+_CUSTOM_FIELD_REX = re.compile(r"^fields__(.*?)(?:_(\d+)(?:__(.*?))?(?:__(.*?))?)?$")
 
 
 class PrestoField:
     # "Column", "Type", "Extra", "Comment"
     def __init__(self, row: dict, custom_fields: List[JiraCustomField]):
-        self.column_name = row["Column"]
+        self.bare_column_name = row["Column"]
         self.type = row["Type"]
         self.extra = row["Extra"]
         self.comment = row["Comment"]
-        match = _CUSTOM_FIELD_REX.match(self.column_name)
-        self.is_custom_field = True if match else False
+        self.all_custom_fields = custom_fields
+
+        match = _CUSTOM_FIELD_REX.match(self.bare_column_name)
+
+        self.is_custom_field = True if match and match.group(1) == "customfield" else False
+        if match and not self.is_custom_field:
+            self._column_name = match.group(1)
+        else:
+            self._column_name = None
+
         if match:
-            self.id_num = match.group(1)
-            self.subfield_1 = None if not match.group(2) else match.group(2)
-            self.subfield_2 = None if not match.group(3) else match.group(3)
+            self.id_num = match.group(2)
+            self.subfield_1 = None if not match.group(3) else match.group(3)
+            self.subfield_2 = None if not match.group(4) else match.group(4)
         else:
             self.id_num = None
             self.subfield_1 = None
             self.subfield_2 = None
+
+        print(f"{self.bare_column_name} -> cn:{self.column_name},id:{self.id_num},cust:{self.is_custom_field}")
+
+    @property
+    def column_name(self) -> str:
+        if self._column_name:
+            return self._column_name
+        return
 
     @staticmethod
     def read_from_file(file_path: str, custom_fields: List[JiraCustomField]) -> List["PrestoField"]:
