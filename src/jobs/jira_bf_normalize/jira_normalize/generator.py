@@ -1,14 +1,8 @@
 import os
 import json
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 import csv
-
-MY_DIR = os.path.dirname(__file__)
-
-with open(os.path.join(MY_DIR, "fields_prod.csv")) as handle:
-    reader = csv.DictReader(handle)
-    prefix = "fields__"
-    _KNOWN_FIELDS = set([row["Column"][len(prefix):] for row in reader])
+import re
 
 
 def _array_to_row(fd_types: dict) -> str:
@@ -55,17 +49,19 @@ _REQUEST_PARTICIPANT_TYPES = {
 }
 
 
-class Field:
+class JiraCustomField:
     def __init__(self, data: dict):
         self.data = data
+
+    @staticmethod
+    def read_from_file(file_path: str) -> List["JiraCustomField"]:
+        with open(file_path) as handle:
+            return [JiraCustomField(it) for it in json.load(handle)]
 
     @property
     def ignore(self) -> bool:
         is_custom = self.data["custom"]
-        known_field =  self.data["id"] in _KNOWN_FIELDS
-        if not known_field:
-            print(f"{self.data['id']} not in known fields")
-        return not is_custom or not known_field
+        return not is_custom
 
     @property
     def id(self) -> str:
@@ -73,8 +69,8 @@ class Field:
 
     @property
     def id_num(self) -> str:
-        prefix = len("customfield_")
-        return self.data["id"][prefix:]
+        k_prefix = len("customfield_")
+        return self.data["id"][k_prefix:]
 
     @property
     def schema_type(self) -> Tuple[str, Optional[str]]:
@@ -161,13 +157,76 @@ class Field:
         )
 
 
+_CUSTOM_FIELD_REX = re.compile(r"^fields__customfield_(\d+)(?:__(.*?))?(?:__(.*))?$")
+
+
+class PrestoField:
+    # "Column", "Type", "Extra", "Comment"
+    def __init__(self, row: dict, custom_fields: List[JiraCustomField]):
+        self.column_name = row["Column"]
+        self.type = row["Type"]
+        self.extra = row["Extra"]
+        self.comment = row["Comment"]
+        match = _CUSTOM_FIELD_REX.match(self.column_name)
+        self.is_custom_field = True if match else False
+        if match:
+            self.id_num = match.group(1)
+            self.subfield_1 = None if not match.group(2) else match.group(2)
+            self.subfield_2 = None if not match.group(3) else match.group(3)
+        else:
+            self.id_num = None
+            self.subfield_1 = None
+            self.subfield_2 = None
+
+    @staticmethod
+    def read_from_file(file_path: str, custom_fields: List[JiraCustomField]) -> List["PrestoField"]:
+        with open(file_path) as handle:
+            reader = csv.DictReader(handle)
+            fields = [PrestoField(row, custom_fields) for row in reader]
+        return fields
+
+
+##
+# -- example of casting to row
+#
+# with x (variant, tasks) as (
+#   values
+#     ('variant1', array['task-1a', 'task-1b']),
+#     ('variant2', array['task-2a', 'task-2b'])
+# )
+# select
+#     cast ((variant, tasks) as row(variant varchar, tasks array(varchar))) as variant_tasks
+# from x;
+#
+# -- so use this style for custom fields:
+#
+# select
+#     cast(
+#         (
+#             fields__customfield_16450,
+#             fields__customfield_16450__disabled,
+#             fields__customfield_16450__id,
+#             fields__customfield_16450__self,
+#             fields__customfield_16450__value
+#         ) as row (
+#             "full_value" varchar,
+#             "disabled" varchar,
+#             "id" varchar,
+#             "self" varchar,
+#             "value" varchar
+#         )) as "topology"
+# from
+#     awsdatacatalog.raw_jira.dw__jira__issues issues;
+##
+
+
+def main():
+    my_dir = os.path.dirname(__file__)
+    custom_fields = JiraCustomField.read_from_file(os.path.join(my_dir, "jira_custom_fields_prod.json"))
+    presto_fields = PrestoField.read_from_file(os.path.join(my_dir, "presto_fields_prod.csv"),
+                                               custom_fields)
+    # TODO: group presto_fields by id; find way to group multiple fields as a row item
+
+
 if __name__ == "__main__":
-    with open(os.path.join(MY_DIR, "jira_fields_prod.json")) as handle:
-        fields = [Field(it) for it in json.load(handle)]
-
-    not_ignored = [field for field in fields if not field.ignore]
-    types = set("-".join(list(field.schema_type)) for field in not_ignored)
-    # print(",\n".join([field.schema_type for field in fields if not field.ignore]))
-    # print("\n".join(types))
-
-    print("\n".join([field.select for field in not_ignored]))
+    main()
