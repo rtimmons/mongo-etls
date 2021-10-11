@@ -1,5 +1,6 @@
 --
--- Target: awsdatacatalog.dev_prod_live.performance_expanded_metrics_change_points_src
+-- Target:
+-- awsdatacatalog.dev_prod_live.performance_expanded_metrics_time_series_src
 --
 
 SELECT  *,

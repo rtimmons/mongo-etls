@@ -1,10 +1,10 @@
 --
 -- Target:
--- awsdatacatalog.dev_prod_live.xform_expanded_metrics_time_series_datapoints
+-- awsdatacatalog.dev_prod_live.performance_expanded_metrics_time_series_xform_datapoints
 --
 -- Dependencies:
 --
---   1. performance_expanded_metrics_time_series
+--   1. performance_expanded_metrics_time_series_src
 --
 --
 SELECT series."_id"                         AS "series_id",
@@ -23,6 +23,5 @@ SELECT series."_id"                         AS "series_id",
        datapoints."commit_date"             AS "commit_date",
        datapoints."evg_create_date"         AS "evg_create_date",
        LOCALTIMESTAMP                       AS "_extract_timestamp"
-FROM   awsdatacatalog.dev_prod_live.performance_expanded_metrics_time_series    AS series,
-       UNNEST(series."data")                                                    AS datapoints
-
+FROM   awsdatacatalog.dev_prod_live.performance_expanded_metrics_time_series_src    AS series,
+       UNNEST(series."data")                                                        AS datapoints

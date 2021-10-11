@@ -1,6 +1,6 @@
 --
 -- Target:
--- awsdatacatalog.dev_prod_live.xform_cedar_perf_results_stats
+-- awsdatacatalog.dev_prod_live.cedar_perf_results_xform_stats
 --
 -- Dependencies:
 --

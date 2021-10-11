@@ -1,5 +1,6 @@
 --
--- Target: awsdatacatalog.dev_prod_live.cedar_perf_results_src
+-- Target:
+-- awsdatacatalog.dev_prod_live.cedar_perf_results_src
 --
 
 SELECT  *,
