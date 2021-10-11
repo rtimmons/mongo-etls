@@ -12,9 +12,8 @@ Structure notes:
 MARS jobs naming strategy:
 
 - one "normalize" job per data source
-- the steps etl the data into `dev_prod_metrics_v1.${data_source}_${table}_raw`
-- jobs going from `_raw` are named `derived_${dest_prefix}` TODO this is..weird
-
+- the steps etl the data into `dev_prod_live.${data_source}_${table}_source`
+- TODO: how to handle dependencies
 
 Presto task type destinations:
 
