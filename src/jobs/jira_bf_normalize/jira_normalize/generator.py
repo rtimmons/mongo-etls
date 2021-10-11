@@ -192,7 +192,7 @@ class PrestoField:
     def column_name(self) -> str:
         if self._column_name:
             return self._column_name
-        return
+        return  # TODO
 
     @staticmethod
     def read_from_file(file_path: str, custom_fields: List[JiraCustomField]) -> List["PrestoField"]:
