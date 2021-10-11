@@ -1,7 +1,9 @@
 --
--- target: awsdatacatalog.dev_prod_live.performance_expanded_metrics_change_points
--- 
+-- target: awsdatacatalog.dev_prod_live.performance_expanded_metrics_change_points_src
+--
 
+
+-- TODO: do this "raw" and do the cute logic as a secondary step
 select 	time_series_info.project as "project",
 		time_series_info.variant as "variant",
 		time_series_info.task as "task",
