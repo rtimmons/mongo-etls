@@ -1,5 +1,5 @@
 --
--- populate awsdatacatalog.dev_prod_metrics_v1.evergreen_events_raw
+-- populate awsdatacatalog.dev_prod_live.evergreen_metrics_atlas_version_events_src
 --
 
 WITH src as (

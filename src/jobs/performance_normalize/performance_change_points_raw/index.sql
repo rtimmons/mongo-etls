@@ -1,5 +1,5 @@
 --
--- target: awsdatacatalog.dev_prod_metrics_v1.performance_change_points_raw
+-- target: awsdatacatalog.dev_prod_live.performance_expanded_metrics_change_points
 -- 
 
 select 	time_series_info.project as "project",
