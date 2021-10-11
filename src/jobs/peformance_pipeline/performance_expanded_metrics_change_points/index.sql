@@ -3,5 +3,5 @@
 --
 
 SELECT  *,
-        NOW() as _extract_timestamp
+        localtimestamp as _extract_timestamp
 FROM    dev_prod_performance_atlas.expanded_metrics.change_points

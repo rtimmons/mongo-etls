@@ -3,5 +3,5 @@
 --
 
 SELECT  *,
-        NOW() as _extract_timestamp
+        localtimestamp as _extract_timestamp
 FROM    evergreen_cedar_atlas.cedar.perf_results
