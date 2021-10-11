@@ -3,7 +3,7 @@
 -- awsdatacatalog.dev_prod_live.cedar_perf_results_src
 --
 
-SELECT  _id,
+SELECT  rs."_id"        AS "_id",
         *,
-        localtimestamp as _extract_timestamp
-FROM    evergreen_cedar_atlas.cedar.perf_results
+        LOCALTIMESTAMP  AS _extract_timestamp
+FROM    evergreen_cedar_atlas.cedar.perf_results AS rs
