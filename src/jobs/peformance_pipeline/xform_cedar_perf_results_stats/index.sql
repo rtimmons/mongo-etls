@@ -18,6 +18,6 @@ SELECT  ps."_id"                    AS perf_result_id,
         ps."analysis"               AS rollups_analysis,
         stats."name"                AS stat_name,
         stats."val"                 AS stat_value,
-        CURRENT_TIMESTAMP           AS _extract_timestamp 
+        LOCALTIMESTAMP              AS _extract_timestamp
 FROM    awsdatacatalog.dev_prod_live.cedar_perf_results_src AS ps,
         unnest(ps.rollups.stats)                            AS stats
