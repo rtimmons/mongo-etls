@@ -3,7 +3,9 @@ name = "mongo-etls"
 version = "0.0.0"
 description = "Dev-prod ETLs and MARS jobs"
 authors = ["Ryan Timmons <ryan.timmons@mongodb.com>"]
-packages = [{include = "jobs", from="src"}]
+packages = [
+    {include = "dag_script", from="."}
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
