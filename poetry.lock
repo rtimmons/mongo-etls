@@ -1,8 +1,20 @@
-package = []
+[[package]]
+name = "mars-util"
+version = "0.7.16"
+description = "MARS Utility User Library"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.mongodb.name"
+reference = "mongodb"
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ce2aa767160f871dd3652615ba0a0dceb7733d62eb8cb4665b87f30a562e3adf"
+content-hash = "c731268b2f5bd59fcf52d755e1e1d67280f20674f5288357f9203d604ea50e02"
 
 [metadata.files]
+mars-util = []
