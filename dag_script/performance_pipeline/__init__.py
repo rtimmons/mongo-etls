@@ -6,7 +6,7 @@ from mars_util.task.destination import PrestoTableDestination
 
 dag = JobDAG()
 
-PRESTO_CONN = "a4216881-9ccb-49fc-b02c-8794e7df4c6b"
+PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
 
 
 def read_file(*relative_to_self):
