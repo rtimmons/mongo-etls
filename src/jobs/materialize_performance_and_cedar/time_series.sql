@@ -1,9 +1,8 @@
---
--- Target:
--- awsdatacatalog.dev_prod_live.performance_expanded_metrics_time_series_src
---
+-- <yaml>
+-- DependsOn: []
+-- </yaml>
 
-SELECT  CAST(ts."_id" AS VARCHAR)   AS "_id",
+SELECT  CAST(ts."_id" AS VARCHAR)    AS "_id",
         ts."measurement"             AS "measurement",
         ts."project"                 AS "project",
         ts."task"                    AS "task",
@@ -13,5 +12,5 @@ SELECT  CAST(ts."_id" AS VARCHAR)   AS "_id",
         ts."updatefailures"          AS "updatefailures",
         ts."lastsuccessfulupdate"    AS "lastsuccessfulupdate",
         ts."lastupdateattempt"       AS "lastupdateattempt",
-        LOCALTIMESTAMP              AS "_extract_timestamp"
+        LOCALTIMESTAMP               AS "_extract_timestamp"
 FROM dev_prod_performance_atlas.expanded_metrics.time_series AS ts

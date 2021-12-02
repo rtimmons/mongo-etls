@@ -1,7 +1,6 @@
---
--- Target:
--- awsdatacatalog.dev_prod_live.cedar_perf_results_src
---
+-- <yaml>
+-- DependsOn: []
+-- </yaml>
 
 SELECT  CAST(ps."_id" AS VARCHAR)   AS "_id",
         ps."info"                   AS "info",

@@ -1,12 +1,7 @@
---
--- Target:
--- awsdatacatalog.dev_prod_live.cedar_perf_results_xform_stats
---
--- Dependencies:
---
---   1. cedar_perf_results_src
---
---
+-- <yaml>
+-- DependsOn: [perf_results]
+-- </yaml>
+
 SELECT  ps."_id"                    AS "perf_result_id",
         ps."info"                   AS "perf_result_info",
         ps."created_at"             AS "perf_result_created_at",

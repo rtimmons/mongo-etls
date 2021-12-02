@@ -1,12 +1,7 @@
---
--- Target:
--- awsdatacatalog.dev_prod_live.performance_expanded_metrics_time_series_xform_datapoints
---
--- Dependencies:
---
---   1. performance_expanded_metrics_time_series_src
---
---
+-- <yaml>
+-- DependsOn: [time_series]
+-- </yaml>
+
 SELECT series."_id"                         AS "series_id",
        series."project"                     AS "project",
        series."task"                        AS "task",
