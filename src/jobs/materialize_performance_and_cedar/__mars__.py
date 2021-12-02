@@ -2,7 +2,7 @@ from mars_util.job_dag import JobDAG
 from mars_util.task import PrestoTask
 from mars_util.task.destination import PrestoTableDestination
 
-import src.task_helpers as helpers
+import dag_script.src.task_helpers as helpers
 
 
 PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
