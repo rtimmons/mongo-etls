@@ -1,5 +1,5 @@
 -- <yaml>
--- DependsOn: []
+-- DependsOn: {}
 -- </yaml>
 
 SELECT  CAST(ps."_id" AS VARCHAR)   AS "_id",

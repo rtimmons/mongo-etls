@@ -1,5 +1,5 @@
 -- <yaml>
--- DependsOn: []
+-- DependsOn: {}
 -- </yaml>
 
 SELECT  CAST(ts."_id" AS VARCHAR)    AS "_id",

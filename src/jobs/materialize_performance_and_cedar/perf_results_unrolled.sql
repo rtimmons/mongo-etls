@@ -1,5 +1,6 @@
 -- <yaml>
--- DependsOn: [perf_results]
+-- DependsOn:
+--   perf_results: awsdatacatalog.dev_prod_live.cedar_perf_results_src
 -- </yaml>
 
 SELECT  ps."_id"                    AS "perf_result_id",

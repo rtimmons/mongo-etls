@@ -1,3 +1,7 @@
+"""
+By convention we expose the _DAG object in a __mars__.py file.
+"""
+
 from mars_util.job_dag import JobDAG
 from mars_util.task import PrestoTask
 from mars_util.task.destination import PrestoTableDestination
