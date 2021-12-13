@@ -52,7 +52,7 @@ class ConventionalPrestoTask(PrestoTask):
             "destination": PrestoTableDestination(
                 dest_tgt=f"awsdatacatalog.dev_prod_live.{name}",
                 dest_replace=True,
-                dest_format="table",
+                dest_format="PARQUET",
             ),
         }
         if "sql" not in other_args:
