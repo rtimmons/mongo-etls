@@ -5,7 +5,7 @@ from mars_util.job_dag import JobDAG
 from mars_util.task import PrestoTask
 from mars_util.task.destination import PrestoTableDestination
 
-import jobs.whereami
+import src.jobs.whereami
 
 PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
 
@@ -16,7 +16,7 @@ class DagHelper:
         self._file_path = os.path.dirname(file_path)
 
     def read_file(self, *child_path) -> Tuple[str, str]:
-        to_read = jobs.whereami.repo_path(self._file_path, *child_path)
+        to_read = src.jobs.whereami.repo_path(self._file_path, *child_path)
         with open(to_read) as handle:
             return handle.read(), to_read
 
