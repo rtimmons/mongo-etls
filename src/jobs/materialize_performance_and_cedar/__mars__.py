@@ -2,35 +2,16 @@
 By convention we expose the _DAG object in a __mars__.py file.
 """
 
-from mars_util.job_dag import JobDAG
+from jobs.helpers import DagHelper
 
-from jobs.helpers import ConventionalPrestoTask
+helper = DagHelper(__file__)
 
-perf_results = ConventionalPrestoTask(
-    name="perf_results",
-    file_path=__file__,
-)
-perf_results_unrolled = ConventionalPrestoTask(
-    name="perf_results_unrolled",
-    file_path=__file__,
-)
-# DependsOn
+perf_results = helper.add_task("perf_results")
+perf_results_unrolled = helper.add_task("perf_results_unrolled")
 perf_results_unrolled.set_prev(perf_results)
 
-
-time_series = ConventionalPrestoTask(
-    name="time_series",
-    file_path=__file__,
-)
-time_series_unrolled = ConventionalPrestoTask(
-    name="time_series_unrolled",
-    file_path=__file__,
-)
-# DependsOn
+time_series = helper.add_task("time_series")
+time_series_unrolled = helper.add_task("time_series_unrolled")
 time_series_unrolled.set_prev(time_series)
 
-dag = JobDAG()
-dag.register_tasks(
-    [perf_results, perf_results_unrolled, time_series, time_series_unrolled]
-)
-_DAG = dag
+_DAG = helper.extract()
