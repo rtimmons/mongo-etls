@@ -23,8 +23,8 @@ def _findup(fpath: str, cwd: str) -> str:
 
 def repo_path(*args: str) -> str:
     """
-    :param args: string path elements for a file in the dsi repo
-                 e.g. ("src", "whereami.py") for this file
+    :param args: string path elements for a file in the repo
+                 e.g. ("src", "jobs", "whereami.py") for this file
     :return: the full path to the file or IOError if it doesn't exist.
     """
     root = _findup(".repo-root", os.path.dirname(__file__))
