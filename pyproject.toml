@@ -1,39 +1,39 @@
-[tool.poetry]
-name = "mongo-etls"
-version = "0.0.0"
-description = "Dev-prod ETLs and MARS jobs"
-authors = ["Ryan Timmons <ryan.timmons@mongodb.com>"]
-packages = [
-    {include = "jobs", from="src"}
-]
-
-[tool.poetry.dependencies]
-python = "^3.9"
-mars-util = "^0.7.16"
-
-[tool.poetry.dev-dependencies]
-pytest = "^6.2"
-pytest-black = "^0.3"
-pytest-cov = "^2.8"
-pytest-flake8 = "^1.0"
-pytest-mypy = "^0.8"
-mypy = "^0.910"
-pytest-pydocstyle = "^2.0"
-black = "^21.7b0"
-pytest-structlog = "^0.3"
-pytest-isort = "^2.0"
-flake8-bugbear = "^21.4"
-flake8 = "3.9.2"
-
-[[tool.poetry.source]]
-name = 'pypi_'  # needed until python-poetry/poetry#3456 is resolved.
-url = 'https://pypi.org/simple'
-secondary = false
-
-[[tool.poetry.source]]
-name = "mongodb"
-url = "https://pypi.mongodb.name"
-secondary = true
+#[tool.poetry]
+#name = "mongo-etls"
+#version = "0.0.0"
+#description = "Dev-prod ETLs and MARS jobs"
+#authors = ["Ryan Timmons <ryan.timmons@mongodb.com>"]
+#packages = [
+#    {include = "jobs", from="src"}
+#]
+#
+#[tool.poetry.dependencies]
+#python = "^3.9"
+#mars-util = "^0.7.16"
+#
+#[tool.poetry.dev-dependencies]
+#pytest = "^6.2"
+#pytest-black = "^0.3"
+#pytest-cov = "^2.8"
+#pytest-flake8 = "^1.0"
+#pytest-mypy = "^0.8"
+#mypy = "^0.910"
+#pytest-pydocstyle = "^2.0"
+#black = "^21.7b0"
+#pytest-structlog = "^0.3"
+#pytest-isort = "^2.0"
+#flake8-bugbear = "^21.4"
+#flake8 = "3.9.2"
+#
+#[[tool.poetry.source]]
+#name = 'pypi_'  # needed until python-poetry/poetry#3456 is resolved.
+#url = 'https://pypi.org/simple'
+#secondary = false
+#
+#[[tool.poetry.source]]
+#name = "mongodb"
+#url = "https://pypi.mongodb.name"
+#secondary = true
 
 
 [tool.black]
@@ -51,10 +51,6 @@ line_length = 100
 [tool.pytest.ini_options]
 flake8-ignore = "W605 W503 W291 E203 E501 F821"
 addopts = "--flake8 --black --mypy --isort --pydocstyle"
-# mongodb_fixture_dir = "tests/integration_tests/fixtures"
-# mongodb_engine = "pymongo"
-# mongodb_host = "mongodb://localhost:28000/?serverSelectionTimeoutMS=100"
-# mongodb_dbname = "build-baron-tools-test"
 testpaths = [
     "src",
     "tests",

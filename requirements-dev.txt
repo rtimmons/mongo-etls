@@ -1,0 +1,17 @@
+pytest
+pytest-black
+pytest-cov
+pytest-flake8
+pytest-mypy
+mypy
+pytest-pydocstyle
+black
+pytest-structlog
+pytest-isort
+flake8-bugbear
+flake8
+
+--extra-index-url https://pypi.mongodb.name/ mars-util
+
+
+
