@@ -12,11 +12,68 @@ python = "^3.9"
 mars-util = "^0.7.16"
 
 [tool.poetry.dev-dependencies]
+pytest = "^6.2"
+pytest-black = "^0.3"
+pytest-cov = "^2.8"
+pytest-flake8 = "^1.0"
+pytest-mypy = "^0.8"
+mypy = "^0.910"
+pytest-pydocstyle = "^2.0"
+black = "^21.7b0"
+pytest-structlog = "^0.3"
+pytest-isort = "^2.0"
+flake8-bugbear = "^21.4"
+flake8 = "3.9.2"
+
+[[tool.poetry.source]]
+name = 'pypi_'  # needed until python-poetry/poetry#3456 is resolved.
+url = 'https://pypi.org/simple'
+secondary = false
 
 [[tool.poetry.source]]
 name = "mongodb"
 url = "https://pypi.mongodb.name"
+secondary = true
 
+
+[tool.black]
+line-length = 100
+target-version = ['py37']
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 100
+
+[tool.pytest.ini_options]
+flake8-ignore = "W605 W503 W291 E203 E501 F821"
+addopts = "--flake8 --black --mypy --isort --pydocstyle"
+# mongodb_fixture_dir = "tests/integration_tests/fixtures"
+# mongodb_engine = "pymongo"
+# mongodb_host = "mongodb://localhost:28000/?serverSelectionTimeoutMS=100"
+# mongodb_dbname = "build-baron-tools-test"
+testpaths = [
+    "src",
+    "tests",
+]
+markers = [
+]
+
+[tool.mypy]
+ignore_missing_imports = true
+disallow_incomplete_defs = true
+disallow_untyped_defs = true
+disallow_untyped_calls = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+]
+ignore_errors = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
