@@ -2,11 +2,11 @@
 
 This is intended to be a set of guidelines and design decisions that all teams within dev-prod use as a starting point for any new or significantly changed work that is data-heavy.
 
-Deviations are to be expected but must be well-reasoned and approved by a purality of dev-prod technical leadership.
+Deviations are to be expected but must be well-reasoned and approved by a plurality of dev-prod technical leadership.
 
 ## Bureaucracy
 
-This document is intentionally NOT a Google doc. This lives in the ETL repo for auditing a PR purposes.
+This document is intentionally NOT a Google doc. This lives in the ETL repo for auditing and PR purposes.
 
 **Changelog**:
 
@@ -43,22 +43,29 @@ Risks:
 ## Data-Flow
 
 1. Dev-prod systems use Atlas as their primary data-store. Atlas is the store-of-record for all OLTP data. Each Atlas cluster has an Analytics Node exposed only to Presto, and each Atlas cluster is onboarded onto Presto as a new federation.
-2. Teams may expose REST or other realtime APIs backed by Atlas. These APIs should be "OLTP"-style and should only interact with a known and bounded number of documents in Atlas. E.g. they should not do large aggregations or expensive queries that will ultimately affect the scalability of their systems.
-2. OLAP data (aggregations, joins with other datasets, data-science, etc) all go through Presto.
+2. Teams may expose REST or other realtime APIs backed by Atlas. These APIs should be "OLTP"-style and should only interact with a *known* and *bounded* number of documents in Atlas. E.g. they should not do large aggregations, scanning of time- or usage-dependent/increasing datasets, or otherwise expensive queries that will ultimately affect the scalability of their systems.
 3. Systems do not call services "in bulk" to get chunks of data. The request graph does not grow without bound.
-4. Presto is used by MARS jobs to create query-friendly snapshots and views that can be joined with all other data in the Presto ecosystem.
-5. Teams have "raw" (landing zone) schemas in Presto that represent snapshots of their entire Atlas data-sets. This "raw" data is volatile, and it changes as the schema and data within Atlas. Landing zone schemas are "private" to the team.
-6. The "raw" data is exposed via "xforms" or "views". These are populated by MARS jobs written and owned by the team. E.g. `evergreen_landing` is transformed into `evergreen_view` via ETL jobs that the Evergreen team owns.
-7. The "view" datasets are considered the "data APIs" and have explicit requirements on their schema, timeliness, and documentation as detailed by the "Policies" section below.
+4. OLAP data (aggregations, joins with other datasets, data-science, etc) all go through Presto.
+5. Presto is used by MARS jobs to create query-friendly snapshots and views that can be joined with all other data in the Presto ecosystem.
+6. Teams have "raw" (landing zone) schemas in Presto that represent snapshots of their entire Atlas data-sets. This "raw" data is volatile, and it changes as the schema and data within Atlas. Landing zone schemas are "private" to the team.
+7. The "raw" data is exposed via "xforms" or "views". These are populated by MARS jobs written and owned by the team. E.g. `evergreen_landing` is transformed into `evergreen_view` via ETL jobs that the Evergreen team owns.
+8. The "view" datasets are considered the "data APIs" and have explicit requirements on their schema, timeliness, and documentation as detailed by the "Policies" section below.
 
 (I'm using "view" as a general term to represent the public dataset that teams maintain as their APIs. Under the covers, the object may be a table etc.)
 
 ## Changes from Status-Quo
 
-1. Teams will not be able to query Evergreen or other APIs "in bulk" to duplicate, materialize, or otherwise query Evergreen data. These queries will need to be run against the Presto views of the Evergreen/etc data.
-2. Users will not have access to Analytics Nodes. Rather, they will access teams' data using Presto.
-3. Users will not have access to raw data. They will instead have access to maintained views that have defined SLAs and guarantees of backward-compatibility.
-4. Data translations will be done in a well-defined ecosystem of MARS jobs and not one-off Kanopy or other Cron execution environments.
+1.  Teams will not be able to query Evergreen or other APIs "in bulk" to duplicate, materialize, or otherwise query Evergreen data. These queries will need to be run against the Presto views of the Evergreen/etc data.
+
+2.  Users will not have access to Analytics Nodes. Rather, they will access teams' data using Presto.
+
+3.  Users will not have access to raw data. They will instead have access to maintained views that have defined SLAs and guarantees of backward-compatibility.
+
+4.  Data translations will be done in a well-defined ecosystem of MARS jobs and not one-off Kanopy or other Cron execution environments.
+
+    See [Using an ETL framework vs writing yet another ETL script](https://airbyte.io/blog/etl-framework-vs-etl-script):
+
+    > Your first ETL script will normally take the form of a CLI that calls an external API to extract some data, normalize it and load it to destination. You run it once and you think it's over...
 
 ## Policies
 
