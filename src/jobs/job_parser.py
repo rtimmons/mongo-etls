@@ -1,7 +1,7 @@
 from typing import Union, List
 import yaml
 
-import jobs.whereami
+import src.jobs.whereami
 
 _COMMENT_START = "-- "
 
@@ -22,7 +22,7 @@ class SqlFile:
             self.contents = path
             self.path = None
         else:
-            self.path = jobs.whereami.repo_path(*path)
+            self.path = src.jobs.whereami.repo_path(*path)
             self.contents = None
 
     def location(self) -> str:
@@ -63,7 +63,6 @@ class SqlFile:
             to_parse = "\n".join(yaml_lines)
             return yaml.safe_load(to_parse)
         return dict()
-
 
 # if __name__ == "__main__":
 #     f = SqlFile("""-- <yaml>
