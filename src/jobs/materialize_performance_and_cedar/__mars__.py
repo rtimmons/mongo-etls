@@ -15,3 +15,5 @@ time_series_unrolled = helper.add_task("time_series_unrolled")
 time_series_unrolled.set_prev(time_series)
 
 _DAG = helper.extract()
+
+print(helper)

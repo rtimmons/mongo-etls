@@ -11,6 +11,6 @@ SELECT  CAST(ts."_id" AS VARCHAR)    AS "_id",
         ts."data"                    AS "data",
         ts."updatefailures"          AS "updatefailures",
         ts."lastsuccessfulupdate"    AS "lastsuccessfulupdate",
-        ts."lastupdateattempt"       AS "lastupdateattempt",
-        LOCALTIMESTAMP               AS "_extract_timestamp"
+        ts."lastupdateattempt"       AS "lastupdateattempt"
+        -- <COMMON_ETL_FIELDS>
 FROM dev_prod_performance_atlas.expanded_metrics.time_series AS ts
