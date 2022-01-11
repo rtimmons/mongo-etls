@@ -5,17 +5,6 @@ import src.jobs.whereami
 
 _COMMENT_START = "-- "
 
-_REPLACEMENTS = {
-    "-- <COMMON_ETL_FIELDS>": ", LOCALTIMESTAMP AS \"_extract_timestamp\""
-}
-
-
-def _replace(line: str) -> str:
-    for needle, replacement in _REPLACEMENTS.items():
-        line = line.replace(needle, replacement)
-    return line
-
-
 class SqlFile:
     def __init__(self, path: Union[List[str], str]):
         if isinstance(path, str):
@@ -42,7 +31,7 @@ class SqlFile:
         return "\n".join(self.contents_lines())
 
     def parsed_lines(self) -> List[str]:
-        return [_replace(line) for line in self.contents_lines()]
+        return [line for line in self.contents_lines()]
 
     def parsed_contents(self) -> str:
         return "\n".join(self.parsed_lines())
@@ -64,14 +53,14 @@ class SqlFile:
             return yaml.safe_load(to_parse)
         return dict()
 
-# if __name__ == "__main__":
-#     f = SqlFile("""-- <yaml>
-# -- DependsOn: {}
-# -- </yaml>
-# SELECT *
-# -- <COMMON_ETL_FIELDS>
-# FROM x
-# """)
-#     print(f.front_matter())
-#     print(f.parsed_lines())
-#     print(f.parsed_contents())
+if __name__ == "__main__":
+    f = SqlFile("""-- <yaml>
+-- DependsOn: {}
+-- </yaml>
+SELECT *
+-- <COMMON_ETL_FIELDS>
+FROM x
+""")
+    print(f.front_matter())
+    print(f.parsed_lines())
+    print(f.parsed_contents())

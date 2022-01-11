@@ -56,7 +56,7 @@ class ConventionalPrestoTask(PrestoTask):
             ),
         }
         if "sql" not in other_args:
-            self._sql_file = self._helper.read_file(f"{name}.sql")
+            self._sql_file = self._helper.read_file("sql_jobs", f"{name}.sql")
             args["sql"] = self._sql_file.parsed_contents()
         else:
             self._sql_file = None

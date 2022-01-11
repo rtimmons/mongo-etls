@@ -6,12 +6,25 @@ from src.jobs.helpers import DagHelper
 
 helper = DagHelper(__file__)
 
-perf_results = helper.add_task("perf_results")
-perf_results_unrolled = helper.add_task("perf_results_unrolled")
-perf_results_unrolled.set_prev(perf_results)
+cedar__cedar__buildlogs__raw = helper.add_task("cedar__cedar__buildlogs__raw")
 
-time_series = helper.add_task("time_series")
-time_series_unrolled = helper.add_task("time_series_unrolled")
-time_series_unrolled.set_prev(time_series)
+cedar__cedar__historical_test_data__raw = helper.add_task("cedar__cedar__historical_test_data__raw")
+
+cedar__cedar__perf_results__raw = helper.add_task("cedar__cedar__perf_results__raw")
+
+cedar__cedar__system_metrics__raw = helper.add_task("cedar__cedar__system_metrics__raw")
+
+cedar__cedar__test_results__raw = helper.add_task("cedar__cedar__test_results__raw")
+cedar__cedar__test_results__raw__unrolled = helper.add_task("cedar__cedar__test_results__raw__unrolled")
+cedar__cedar__test_results__raw__unrolled.set_prev(cedar__cedar__test_results__raw)
+
+performance__expanded_metrics__change_points__raw = helper.add_task("performance__expanded_metrics__change_points__raw")
+
+performance__expanded_metrics__time_series__raw = helper.add_task("performance__expanded_metrics__time_series__raw")
+performance__expanded_metrics__time_series__raw__unrolled = helper.add_task("performance__expanded_metrics__time_series__raw__unrolled")
+performance__expanded_metrics__time_series__raw__unrolled.set_prev(performance__expanded_metrics__time_series__raw)
+
+performance__expanded_metrics__versions__raw = helper.add_task("performance__expanded_metrics__versions__raw")
+
 
 _DAG = helper.extract()
