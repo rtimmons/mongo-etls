@@ -67,6 +67,8 @@ def main():
                 col_dict = dict()
                 col_dict['CAST(vs."_id" AS VARCHAR)'] = '"_id"'
                 for column in table:
+                    if column == "_id":
+                        continue
                     col_dict[f'vs."{column}"'] = f'"{column}"'
 
                 select_st = select_statement(col_dict)
@@ -86,8 +88,6 @@ def main():
                         handle.write(contents)
                 finally:
                     os.chdir(cwd)
-
-
 
 
 if __name__ == "__main__":

@@ -4,7 +4,6 @@
 -- DependsOn: {}
 -- </yaml>
 SELECT  CAST(vs."_id" AS VARCHAR)  AS "_id",
-        vs."_id"                   AS "_id",
         vs."average_duration"      AS "average_duration",
         vs."info"                  AS "info",
         vs."last_update"           AS "last_update",
