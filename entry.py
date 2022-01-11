@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import importlib
 import os
 import sys
@@ -31,5 +29,6 @@ ENTRY_POINT = "src/jobs/materialize_performance_and_cedar/__mars__.py"
 
 if __name__ == "__main__":
     print(f"argv={sys.argv}")
-    import_github_package(folder=sys.argv[1], entry_point=ENTRY_POINT)
+    dag = import_github_package(folder=sys.argv[1], entry_point=ENTRY_POINT)
+    print(f"_DAG=[{dag}]")
 
