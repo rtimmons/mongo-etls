@@ -19,5 +19,7 @@ SELECT series."_id"                         AS "series_id",
        datapoints."commit_date"             AS "commit_date",
        datapoints."evg_create_date"         AS "evg_create_date"
        -- <COMMON_ETL_FIELDS>
-FROM   awsdatacatalog.dev_prod_live.time_series    AS series,
-       UNNEST(series."data")                       AS datapoints
+       , LOCALTIMESTAMP AS "_extract_timestamp"
+       -- </COMMON_ETL_FIELDS>
+FROM   awsdatacatalog.dev_prod_live.performance__expanded_metrics__time_series__raw    AS series,
+       UNNEST(series."data")                                                           AS datapoints

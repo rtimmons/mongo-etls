@@ -15,5 +15,7 @@ SELECT  ps."_id"                    AS "perf_result_id",
         stats."name"                AS "stat_name",
         stats."val"                 AS "stat_value"
         -- <COMMON_ETL_FIELDS>
-FROM    awsdatacatalog.dev_prod_live.cedar_perf_results_src AS ps,
-        UNNEST(ps.rollups."stats")                          AS stats
+        , LOCALTIMESTAMP AS "_extract_timestamp"
+        -- </COMMON_ETL_FIELDS>
+FROM    awsdatacatalog.dev_prod_live.cedar__cedar__perf_results__raw AS ps,
+        UNNEST(ps.rollups."stats")                                   AS stats

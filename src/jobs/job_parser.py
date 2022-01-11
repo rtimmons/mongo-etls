@@ -5,6 +5,7 @@ import src.jobs.whereami
 
 _COMMENT_START = "-- "
 
+
 class SqlFile:
     def __init__(self, path: Union[List[str], str]):
         if isinstance(path, str):
