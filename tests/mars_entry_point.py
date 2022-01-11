@@ -2,6 +2,9 @@ import importlib
 import os
 import sys
 
+# TODO: link to relevant mars code
+# TODO: move to a CI test
+
 
 def import_github_package(folder: str, entry_point: str):
     """Imports a DAG package fetched from Github
@@ -25,9 +28,11 @@ def import_github_package(folder: str, entry_point: str):
     return m._DAG
 
 
-ENTRY_POINT = "src/jobs/materialize_performance_and_cedar/__mars__.py"
-
 if __name__ == "__main__":
+    # TODO: requires `ln -s $PWD some_checkout_dir` and then invoked with that as argv[1].
+    #    ln -s $PWD ./dag_pkg
+    #    python mars_entry_point.py dag_pkg/
+    ENTRY_POINT = "src/jobs/materialize_large_cedar/__mars__.py"
     print(f"argv={sys.argv}")
     dag = import_github_package(folder=sys.argv[1], entry_point=ENTRY_POINT)
     print(f"_DAG=[{dag}]")

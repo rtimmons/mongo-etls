@@ -4,6 +4,7 @@ import os.path
 import yaml
 import src.jobs.whereami as whereami
 
+# TODO: move this to a bootstrap helper
 
 def get_struct() -> dict:
     struct_path = whereami.repo_path("src", "jobs", "materialize_performance_and_cedar", "structure.yml")
@@ -11,6 +12,7 @@ def get_struct() -> dict:
         return yaml.safe_load(handle)
 
 
+# TODO: facility to update existing <COMMON_ETL_FIELDS> etc sections
 _DEFAULT_SUFFIXES = {
     "COMMON_ETL_FIELDS": ', LOCALTIMESTAMP AS "_extract_timestamp"',
 }

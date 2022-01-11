@@ -38,6 +38,7 @@ class SqlFile:
         return "\n".join(self.parsed_lines())
 
     def front_matter(self) -> dict:
+        # TODO: the <yaml> thing is a bit hokey and not really supported
         yaml_lines = []
         for line in self.contents_lines():
             line = line.rstrip()
@@ -53,15 +54,3 @@ class SqlFile:
             to_parse = "\n".join(yaml_lines)
             return yaml.safe_load(to_parse)
         return dict()
-
-if __name__ == "__main__":
-    f = SqlFile("""-- <yaml>
--- DependsOn: {}
--- </yaml>
-SELECT *
--- <COMMON_ETL_FIELDS>
-FROM x
-""")
-    print(f.front_matter())
-    print(f.parsed_lines())
-    print(f.parsed_contents())
