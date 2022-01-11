@@ -1,15 +1,20 @@
+flake8-isort
+flake8
 pytest
 pytest-black
 pytest-cov
-pytest-flake8
+# https://github.com/tholo/pytest-flake8/issues/81
+pytest-flake8-v2
 pytest-mypy
 mypy
-pytest-pydocstyle
+# TODO: enable pydocstyle
+# pytest-pydocstyle
 black
 pytest-structlog
 pytest-isort
 flake8-bugbear
-flake8
+
+types-PyYAML
 
 --extra-index-url https://pypi.mongodb.name/ mars-util
 

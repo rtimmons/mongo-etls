@@ -1,22 +1,22 @@
-from typing import Union
 import os.path
+from typing import Any, List, Optional, Union
 
 from mars_util.job_dag import JobDAG
 from mars_util.task import PrestoTask
 from mars_util.task.destination import PrestoTableDestination
 
-import src.jobs.whereami
 import src.jobs.job_parser
+import src.jobs.whereami
 
 PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
 
 
 class DagHelper:
     def __init__(self, file_path: str):
-        self._tasks = []
+        self._tasks: List[PrestoTask] = []
         self._file_path = os.path.dirname(file_path)
 
-    def read_file(self, *child_path) -> src.jobs.job_parser.SqlFile:
+    def read_file(self, *child_path: str) -> src.jobs.job_parser.SqlFile:
         path = src.jobs.whereami.repo_path(self._file_path, *child_path)
         return src.jobs.job_parser.SqlFile([path])
 
@@ -26,12 +26,12 @@ class DagHelper:
         self._tasks.append(task)
         return task
 
-    def extract(self):
+    def extract(self) -> JobDAG:
         dag = JobDAG()
         dag.register_tasks(list(set(self._tasks)))
         return dag
 
-    def __str__(self):
+    def __str__(self) -> str:
         out = ["DagHelper("]
         for task in self._tasks:
             out.append(str(task))
@@ -41,7 +41,7 @@ class DagHelper:
 
 
 class ConventionalPrestoTask(PrestoTask):
-    def __init__(self, name: str, helper: DagHelper, **other_args):
+    def __init__(self, name: str, helper: DagHelper, **other_args: Any):
         self._name = name
         self._helper = helper
 
@@ -55,6 +55,7 @@ class ConventionalPrestoTask(PrestoTask):
                 dest_format="PARQUET",
             ),
         }
+        self._sql_file: Optional[src.jobs.job_parser.SqlFile] = None
         if "sql" not in other_args:
             self._sql_file = self._helper.read_file("sql_jobs", f"{name}.sql")
             args["sql"] = self._sql_file.parsed_contents()
@@ -65,5 +66,5 @@ class ConventionalPrestoTask(PrestoTask):
         super().__init__(**args)
         helper.add_task(self)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"ConventionalPrestoTask({self._name}, {self._sql_file})"

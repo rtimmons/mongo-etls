@@ -1,4 +1,5 @@
-from typing import Union, List
+from typing import List, Optional, Union
+
 import yaml
 
 import src.jobs.whereami
@@ -9,22 +10,23 @@ _COMMENT_START = "-- "
 class SqlFile:
     def __init__(self, path: Union[List[str], str]):
         if isinstance(path, str):
-            self.contents = path
+            self._contents: Optional[str] = path
             self.path = None
         else:
             self.path = src.jobs.whereami.repo_path(*path)
-            self.contents = None
+            self._contents = None
 
     def location(self) -> str:
         return self.path if self.path else "InlineContents"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"SQLFile:{self.parsed_contents()}@{self.location()}"
 
     def contents_lines(self) -> List[str]:
-        if self.contents:
-            out = self.contents.split("\n")
+        if self._contents:
+            out = self._contents.split("\n")
             return out
+        assert self.path is not None
         with open(self.path, "r") as handle:
             return [line.rstrip() for line in handle.readlines()]
 

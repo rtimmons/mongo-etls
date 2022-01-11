@@ -2,6 +2,7 @@ import os
 import os.path
 
 import yaml
+
 import src.jobs.whereami as whereami
 
 # TODO: move this to a bootstrap helper
@@ -25,7 +26,7 @@ def select_statement(
     kvs: dict, padding: int = 2, leader: str = "SELECT", suffixes: dict = None
 ) -> str:
     max_len = 0
-    for k, v in kvs.items():
+    for k in kvs.keys():
         max_len = max(max_len, len(k))
 
     leader_len = len(leader)
@@ -61,7 +62,7 @@ def select_statement(
 _TO_REMOVE = {"dev_prod_", "_atlas", "evergreen_"}
 
 
-def main():
+def main() -> None:
     struct = get_struct()
     for source_name, source in struct["Sources"].items():
         for db_name, db in source.items():
