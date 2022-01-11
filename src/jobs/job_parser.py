@@ -6,7 +6,7 @@ import src.jobs.whereami
 _COMMENT_START = "-- "
 
 _REPLACEMENTS = {
-    "-- <COMMON_ETL_FIELDS>": ", LOCALTIMESTAMP AS \"_extract_ts\""
+    "-- <COMMON_ETL_FIELDS>": ", LOCALTIMESTAMP AS \"_extract_timestamp\""
 }
 
 

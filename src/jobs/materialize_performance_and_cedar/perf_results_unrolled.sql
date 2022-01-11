@@ -13,7 +13,7 @@ SELECT  ps."_id"                    AS "perf_result_id",
         ps.rollups."valid"          AS "rollups_valid",
         ps."analysis"               AS "rollups_analysis",
         stats."name"                AS "stat_name",
-        stats."val"                 AS "stat_value",
+        stats."val"                 AS "stat_value"
         -- <COMMON_ETL_FIELDS>
 FROM    awsdatacatalog.dev_prod_live.cedar_perf_results_src AS ps,
         UNNEST(ps.rollups."stats")                          AS stats

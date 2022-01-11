@@ -1,0 +1,71 @@
+
+Sources:
+  # _atlas:
+  #   database:
+  #     table:
+  #       - column
+  dev_prod_performance_atlas:
+    expanded_metrics:
+      change_points:
+      - algorithm
+      - calculated_on
+      - cedar_perf_result_id
+      - order
+      - percent_change
+      - time_series_info
+      - triage
+      - version
+      time_series:
+      - data
+      - lastsuccessfulupdate
+      - lastupdateattempt
+      - measurement
+      - project
+      - task
+      - test
+      - updatefailures
+      - variant
+      versions:
+      - author
+      - author_email
+      - branch
+      - commit
+      - commit_date
+      - evg_create_date
+      - message
+      - repo_full_name
+      - version_id
+
+  evergreen_cedar_atlas:
+    cedar:
+      buildlogs:
+      - _id
+      - artifact
+      - completed_at
+      - created_at
+      - info
+      historical_test_data:
+      - _id
+      - average_duration
+      - info
+      - last_update
+      - num_pass
+      perf_results:
+      - _id
+      - analysis
+      - completed_at
+      - created_at
+      - info
+      - rollups
+      system_metrics:
+      - _id
+      - artifact
+      - completed_at
+      - created_at
+      - info
+      test_results:
+      - _id
+      - artifact
+      - completed_at
+      - created_at
+      - info
