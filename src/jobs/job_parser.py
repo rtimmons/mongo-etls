@@ -44,7 +44,7 @@ class SqlFile:
             line = line.rstrip()
             if not line.startswith(_COMMENT_START):
                 break
-            contents = line[len(_COMMENT_START):]  # "-- <yaml>" -> "<yaml>"
+            contents = line[len(_COMMENT_START) :]  # "-- <yaml>" -> "<yaml>"
             if contents.startswith("<yaml>"):
                 continue
             if contents.startswith("</yaml>"):

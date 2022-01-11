@@ -6,7 +6,7 @@ import re
 
 
 def _array_to_row(fd_types: dict) -> str:
-    fds = [f"\"{k}\" {v}" for k, v in fd_types.items()]
+    fds = [f'"{k}" {v}' for k, v in fd_types.items()]
     return f"array(row({', '.join(fds)}))"
 
 
@@ -84,7 +84,14 @@ class JiraCustomField:
     @property
     def castable(self) -> str:
         typ, subtyp = self.schema_type
-        if typ in {"string", "any", "user", "sd-servicelevelagreement", "option", "sd-customerrequesttype"}:
+        if typ in {
+            "string",
+            "any",
+            "user",
+            "sd-servicelevelagreement",
+            "option",
+            "sd-customerrequesttype",
+        }:
             return self.null_safe
         if typ == "option-with-child" and subtyp.endswith("cascadingselect"):
             return self.null_safe
@@ -93,7 +100,12 @@ class JiraCustomField:
             return self.null_safe
         if typ == "array":
             # TODO: fields__customfield_18255 is multigrouppicker but missing
-            if subtyp.endswith("multiselect") or subtyp.endswith("multiuserpicker") or subtyp.endswith("multicheckboxes") or subtyp.endswith("multigrouppicker"):
+            if (
+                subtyp.endswith("multiselect")
+                or subtyp.endswith("multiuserpicker")
+                or subtyp.endswith("multicheckboxes")
+                or subtyp.endswith("multigrouppicker")
+            ):
                 return f"cast({self.json_parsed} as {_array_to_row(_MULTISELECT_TYPES)})"
             if subtyp.endswith("labels") or subtyp.endswith("sd-customer-organizations"):
                 return f"cast({self.json_parsed} as array(varchar))"
@@ -106,21 +118,38 @@ class JiraCustomField:
             if subtyp.endswith("greenhopper.jira:gh-sprint"):
                 return f"cast({self.json_parsed} as array(varchar))"
         if typ == "number":
-            if subtyp.endswith("float") or subtyp.endswith("scripted-field") or subtyp.endswith("jpo-custom-field-original-story-points"):
+            if (
+                subtyp.endswith("float")
+                or subtyp.endswith("scripted-field")
+                or subtyp.endswith("jpo-custom-field-original-story-points")
+            ):
                 return f"try(cast({self.null_safe} as double))"
         if typ == "date":
-            if subtyp.endswith("datepicker") or subtyp.endswith("jpo-custom-field-baseline-start") or subtyp.endswith("jpo-custom-field-baseline-end"):
+            if (
+                subtyp.endswith("datepicker")
+                or subtyp.endswith("jpo-custom-field-baseline-start")
+                or subtyp.endswith("jpo-custom-field-baseline-end")
+            ):
                 return f"from_iso8601_date({self.null_safe})"
         if typ == "datetime":
             # TODO: fields__customfield_14452 is sd-request-feedback-date but missing
-            if subtyp.endswith("firstresponsedate") or subtyp.endswith("customfieldtypes:datetime") or subtyp.endswith("groovyrunner:scripted-field") or subtyp.endswith("sd-request-feedback-date"):
+            if (
+                subtyp.endswith("firstresponsedate")
+                or subtyp.endswith("customfieldtypes:datetime")
+                or subtyp.endswith("groovyrunner:scripted-field")
+                or subtyp.endswith("sd-request-feedback-date")
+            ):
                 return f"from_iso8601_timestamp({self.null_safe})"
         if typ == "group":
-            return self.null_safe  # TODO: not right, only fields__customfield_10030 uses this I think ?
+            return (
+                self.null_safe
+            )  # TODO: not right, only fields__customfield_10030 uses this I think ?
         if typ == "version":
             if subtyp.endswith("customfieldtypes:version"):  # TODO: fields__customfield_11653
                 return self.null_safe
-            if subtyp.endswith("greenhopper-releasedmultiversionhistory"):  # TODO: fields__customfield_10559
+            if subtyp.endswith(
+                "greenhopper-releasedmultiversionhistory"
+            ):  # TODO: fields__customfield_10559
                 return self.null_safe
         print(f"Unknown type ({typ}, {subtyp}) on {self.id}")
         return "??"
@@ -133,20 +162,22 @@ class JiraCustomField:
     def column_name(self) -> str:
         out = self.data["name"]
         # lol let's pretend regexes don't exist for now
-        replaced = out.lower()\
-            .replace(" ", "_")\
-            .replace("'", "_")\
-            .replace("?", "_")\
-            .replace("!", "_")\
-            .replace("#", "_")\
-            .replace("/", "_")\
-            .replace("’", "_")\
-            .replace("-", "_")\
-            .replace("(", "_")\
-            .replace(")", "_")\
-            .replace("__", "_")\
+        replaced = (
+            out.lower()
+            .replace(" ", "_")
+            .replace("'", "_")
+            .replace("?", "_")
+            .replace("!", "_")
+            .replace("#", "_")
+            .replace("/", "_")
+            .replace("’", "_")
+            .replace("-", "_")
+            .replace("(", "_")
+            .replace(")", "_")
             .replace("__", "_")
-        return f"\"{replaced}_cf\""
+            .replace("__", "_")
+        )
+        return f'"{replaced}_cf"'
 
     @property
     def select(self) -> str:
@@ -186,7 +217,9 @@ class PrestoField:
             self.subfield_1 = None
             self.subfield_2 = None
 
-        print(f"{self.bare_column_name} -> cn:{self.column_name},id:{self.id_num},cust:{self.is_custom_field}")
+        print(
+            f"{self.bare_column_name} -> cn:{self.column_name},id:{self.id_num},cust:{self.is_custom_field}"
+        )
 
     @property
     def column_name(self) -> str:
@@ -238,9 +271,12 @@ class PrestoField:
 
 def main():
     my_dir = os.path.dirname(__file__)
-    custom_fields = JiraCustomField.read_from_file(os.path.join(my_dir, "jira_custom_fields_prod.json"))
-    presto_fields = PrestoField.read_from_file(os.path.join(my_dir, "presto_fields_prod.csv"),
-                                               custom_fields)
+    custom_fields = JiraCustomField.read_from_file(
+        os.path.join(my_dir, "jira_custom_fields_prod.json")
+    )
+    presto_fields = PrestoField.read_from_file(
+        os.path.join(my_dir, "presto_fields_prod.csv"), custom_fields
+    )
     # TODO: group presto_fields by id; find way to group multiple fields as a row item
 
 

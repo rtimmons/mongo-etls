@@ -6,8 +6,11 @@ import src.jobs.whereami as whereami
 
 # TODO: move this to a bootstrap helper
 
+
 def get_struct() -> dict:
-    struct_path = whereami.repo_path("src", "jobs", "materialize_performance_and_cedar", "structure.yml")
+    struct_path = whereami.repo_path(
+        "src", "jobs", "materialize_performance_and_cedar", "structure.yml"
+    )
     with open(struct_path, "r") as handle:
         return yaml.safe_load(handle)
 
@@ -18,10 +21,9 @@ _DEFAULT_SUFFIXES = {
 }
 
 
-def select_statement(kvs: dict,
-                     padding: int = 2,
-                     leader: str = "SELECT",
-                     suffixes: dict = None) -> str:
+def select_statement(
+    kvs: dict, padding: int = 2, leader: str = "SELECT", suffixes: dict = None
+) -> str:
     max_len = 0
     for k, v in kvs.items():
         max_len = max(max_len, len(k))
@@ -56,9 +58,7 @@ def select_statement(kvs: dict,
     return "\n".join(out)
 
 
-_TO_REMOVE = {
-    "dev_prod_", "_atlas", "evergreen_"
-}
+_TO_REMOVE = {"dev_prod_", "_atlas", "evergreen_"}
 
 
 def main():

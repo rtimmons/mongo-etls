@@ -36,4 +36,3 @@ if __name__ == "__main__":
     print(f"argv={sys.argv}")
     dag = import_github_package(folder=sys.argv[1], entry_point=ENTRY_POINT)
     print(f"_DAG=[{dag}]")
-
