@@ -1,11 +1,10 @@
 import importlib
 import os
-import sys
-
-# TODO: link to relevant mars code
-# TODO: move to a CI test
+import unittest
 
 
+# Copied loosely from
+# https://github.com/10gen/mars/blob/95aa3afa31ae5abc448c8535a78a4461d078d6bd/mars-worker/dag_render_main.py#L46
 def import_github_package(folder: str, entry_point: str):
     """Imports a DAG package fetched from Github
 
@@ -28,11 +27,16 @@ def import_github_package(folder: str, entry_point: str):
     return m._DAG
 
 
-if __name__ == "__main__":
-    # TODO: requires `ln -s $PWD some_checkout_dir` and then invoked with that as argv[1].
-    #    ln -s $PWD ./dag_pkg
-    #    python mars_entry_point.py dag_pkg/
-    ENTRY_POINT = "src/jobs/materialize_large_cedar/__mars__.py"
-    print(f"argv={sys.argv}")
-    dag = import_github_package(folder=sys.argv[1], entry_point=ENTRY_POINT)
-    print(f"_DAG=[{dag}]")
+class EntryPointsTests(unittest.TestCase):
+    def test_fails(self):
+        self.fail("idk")
+
+
+# if __name__ == "__main__":
+#     # TODO: requires `ln -s $PWD some_checkout_dir` and then invoked with that as argv[1].
+#     #    ln -s $PWD ./dag_pkg
+#     #    python mars_entry_point.py dag_pkg/
+#     ENTRY_POINT = "src/jobs/materialize_large_cedar/__mars__.py"
+#     print(f"argv={sys.argv}")
+#     dag = import_github_package(folder=sys.argv[1], entry_point=ENTRY_POINT)
+#     print(f"_DAG=[{dag}]")
