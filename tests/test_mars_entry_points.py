@@ -49,6 +49,7 @@ def run_entry_point(entry_point: str) -> Any:
 class EntryPointsTests(unittest.TestCase):
     def test_jobs_cedar_imports(self):
         root_path = whereami.repo_path("src", "jobs")  # /home/foo/Projects/mongo-etls/src/jobs
+        found = 0
         for ent in os.listdir(root_path):  # ent like "materialize_large_cedar" and "whereami.py"
             ent_path = os.path.join(root_path, ent)
             mars_path = os.path.join(
@@ -58,3 +59,9 @@ class EntryPointsTests(unittest.TestCase):
             if os.path.isdir(ent_path) and os.path.exists(full_mars_path):
                 the_dag = run_entry_point(mars_path)
                 self.assertIsNotNone(the_dag, f"Job {ent} not exported properly")
+                found += 1
+
+        # Basic sanity check that we found at least two jobs.
+        # Consider bumping this as more jobs are added
+        # or if the above logic is changed in any real way.
+        self.assertGreaterEqual(found, 2)

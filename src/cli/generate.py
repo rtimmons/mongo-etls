@@ -1,22 +1,28 @@
+"""
+Usage:
+
+    cd mongo-etls
+    source etls_venv/bin/activate
+    python3 ./src/cli/generate.py materialize_large_cedar
+
+Reads structure.yml and generates select statement files in sql_jobs.
+"""
 import os
 import os.path
+import sys
+from typing import List
 
 import yaml
 
 import src.jobs.whereami as whereami
 
-# TODO: move this to a bootstrap helper
 
-
-def get_struct() -> dict:
-    struct_path = whereami.repo_path(
-        "src", "jobs", "materialize_performance_and_cedar", "structure.yml"
-    )
+def _get_struct(job_name: str) -> dict:
+    struct_path = whereami.repo_path("src", "jobs", job_name, "structure.yml")
     with open(struct_path, "r") as handle:
         return yaml.safe_load(handle)
 
 
-# TODO: facility to update existing <COMMON_ETL_FIELDS> etc sections
 _DEFAULT_SUFFIXES = {
     "COMMON_ETL_FIELDS": ', LOCALTIMESTAMP AS "_extract_timestamp"',
 }
@@ -62,8 +68,9 @@ def select_statement(
 _TO_REMOVE = {"dev_prod_", "_atlas", "evergreen_"}
 
 
-def main() -> None:
-    struct = get_struct()
+def main(argv: List[str]) -> None:
+    job_name = argv[1]
+    struct = _get_struct(job_name)
     for source_name, source in struct["Sources"].items():
         for db_name, db in source.items():
             for table_name, table in db.items():
@@ -85,7 +92,9 @@ def main() -> None:
 
                 cwd = os.getcwd()
                 try:
-                    path = os.path.join(os.path.dirname(__file__), "sql_jobs")
+                    path = os.path.join(
+                        os.path.dirname(__file__), "..", "jobs", job_name, "sql_jobs"
+                    )
                     os.chdir(path)
                     with open(file_name, "w") as handle:
                         handle.write(contents)
@@ -94,4 +103,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv)
