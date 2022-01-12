@@ -47,7 +47,7 @@ def run_entry_point(entry_point: str) -> Any:
 
 
 class EntryPointsTests(unittest.TestCase):
-    def test_jobs_cedar_imports(self):
+    def test_jobs_mars_imports(self):
         root_path = whereami.repo_path("src", "jobs")  # /home/foo/Projects/mongo-etls/src/jobs
         found = 0
         for ent in os.listdir(root_path):  # ent like "materialize_large_cedar" and "whereami.py"
@@ -64,4 +64,4 @@ class EntryPointsTests(unittest.TestCase):
         # Basic sanity check that we found at least two jobs.
         # Consider bumping this as more jobs are added
         # or if the above logic is changed in any real way.
-        self.assertGreaterEqual(found, 2)
+        self.assertGreaterEqual(found, 3)
