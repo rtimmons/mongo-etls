@@ -1,9 +1,7 @@
 """
 Usage:
 
-    cd mongo-etls
-    source etls_venv/bin/activate
-    python3 ./src/cli/generate.py materialize_large_cedar
+    ./ci.sh python3 src/cli/generate.py materialize_performance_and_cedar
 
 Reads structure.yml and generates select statement files in sql_jobs.
 """
