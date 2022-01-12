@@ -4,6 +4,10 @@ This is intended to be a set of guidelines and design decisions that all teams w
 
 Deviations are to be expected but must be well-reasoned and approved by a plurality of dev-prod technical leadership.
 
+## TODO:
+
+- Incorporate the DW guide https://docs.google.com/document/d/1_tBRWfUmRxx7E3nSCxQInc0jRFKk-mtV7NcqmEbZd5E/edit#heading=h.nmf3dg4tswn4
+
 ## Bureaucracy
 
 This document is intentionally NOT a Google doc. This lives in the ETL repo for auditing and PR purposes.

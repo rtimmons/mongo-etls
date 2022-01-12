@@ -12,9 +12,7 @@ line_length = 100
 
 [tool.pytest.ini_options]
 flake8-ignore = "W605 W503 W291 E203 E501 F821"
-addopts = "--flake8 --black --mypy --isort"
-# TODO: enable pydocstyle
-#addopts = "--flake8 --black --mypy --isort --pydocstyle"
+addopts = "--flake8 --black --mypy --isort --pydocstyle"
 testpaths = [
     "src",
     "tests",

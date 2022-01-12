@@ -7,8 +7,7 @@ pytest-cov
 pytest-flake8-v2
 pytest-mypy
 mypy
-# TODO: enable pydocstyle
-# pytest-pydocstyle
+pytest-pydocstyle
 black
 pytest-structlog
 pytest-isort
