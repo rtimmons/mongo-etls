@@ -38,6 +38,7 @@ def run_entry_point(entry_point: str) -> Any:
     repo_root = whereami.repo_path()
     cwd = os.getcwd()
     try:
+        # TODO: this requires "ln -s $PWD dag_pkg" for some reason
         with tempfile.TemporaryDirectory() as tmpdirname:
             os.chdir(tmpdirname)
             os.symlink(repo_root, _FOLDER_NAME)
