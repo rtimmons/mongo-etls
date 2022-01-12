@@ -1,0 +1,28 @@
+
+Sources:
+  evergreen_cedar_atlas:
+    cedar:
+      buildlogs:
+      - _id
+      - artifact
+      - completed_at
+      - created_at
+      - info
+      historical_test_data:
+      - _id
+      - average_duration
+      - info
+      - last_update
+      - num_pass
+      system_metrics:
+      - _id
+      - artifact
+      - completed_at
+      - created_at
+      - info
+      test_results:
+      - _id
+      - artifact
+      - completed_at
+      - created_at
+      - info
