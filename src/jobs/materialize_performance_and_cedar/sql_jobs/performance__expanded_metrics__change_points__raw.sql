@@ -15,5 +15,5 @@ SELECT  CAST(vs."_id" AS VARCHAR)  AS "_id",
         -- <COMMON_ETL_FIELDS>
         , LOCALTIMESTAMP AS "_extract_timestamp"
         -- </COMMON_ETL_FIELDS>
-FROM  dev_prod_performance_atlas.expanded_metrics.change_points AS vs
+FROM  "dev_prod_performance_atlas"."expanded_metrics"."change_points" AS vs
 

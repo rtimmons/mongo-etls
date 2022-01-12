@@ -12,5 +12,5 @@ SELECT  CAST(vs."_id" AS VARCHAR)  AS "_id",
         -- <COMMON_ETL_FIELDS>
         , LOCALTIMESTAMP AS "_extract_timestamp"
         -- </COMMON_ETL_FIELDS>
-FROM  evergreen_cedar_atlas.cedar.perf_results AS vs
+FROM  "evergreen_cedar_atlas"."cedar"."perf_results" AS vs
 
