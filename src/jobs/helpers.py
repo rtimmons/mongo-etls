@@ -40,17 +40,23 @@ class DagHelper:
         return "".join(out)
 
 
+# TODO: this is to work around DP-1894
+def _sanitize_name(name: str) -> str:
+    return name.replace("-", "_")
+
+
 class ConventionalPrestoTask(PrestoTask):
     def __init__(self, name: str, helper: DagHelper, **other_args: Any):
         self._name = name
         self._helper = helper
 
+        dest_name = _sanitize_name(name)
         args = {
             "name": name,
             "conn_id": PRESTO_CONN,
             "sql_source": "config",
             "destination": PrestoTableDestination(
-                dest_tgt=f"awsdatacatalog.dev_prod_live.{name}",
+                dest_tgt=f"awsdatacatalog.dev_prod_live.{dest_name}",
                 dest_replace=True,
                 dest_format="PARQUET",
             ),
