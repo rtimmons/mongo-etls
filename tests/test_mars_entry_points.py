@@ -1,11 +1,16 @@
 import importlib
 import os
+import os.path
+import tempfile
 import unittest
+from typing import Any
+
+from src.jobs import whereami
 
 
 # Copied loosely from
 # https://github.com/10gen/mars/blob/95aa3afa31ae5abc448c8535a78a4461d078d6bd/mars-worker/dag_render_main.py#L46
-def import_github_package(folder: str, entry_point: str):
+def import_github_package(folder: str, entry_point: str) -> Any:
     """Imports a DAG package fetched from Github
 
     Args:
@@ -22,22 +27,34 @@ def import_github_package(folder: str, entry_point: str):
     dir_path, file = os.path.split(entry_point)
     file = file.split(".")[0]
     to_import = f"{dag_pkg}.{os.path.join(dir_path, file).replace('/', '.')}"
-    print(f"import {to_import}")
     m = importlib.import_module(to_import)
     return m._DAG
 
 
+_FOLDER_NAME = "dag_pkg"
+
+
+def run_entry_point(entry_point: str) -> Any:
+    repo_root = whereami.repo_path()
+    cwd = os.getcwd()
+    try:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            os.chdir(tmpdirname)
+            os.symlink(repo_root, _FOLDER_NAME)
+            return import_github_package(folder=_FOLDER_NAME, entry_point=entry_point)
+    finally:
+        os.chdir(cwd)
+
+
 class EntryPointsTests(unittest.TestCase):
-    def test_fails(self):
-        # TODO: enable
-        self.skipTest("TODO: enable")
-
-
-# if __name__ == "__main__":
-#     # TODO: requires `ln -s $PWD some_checkout_dir` and then invoked with that as argv[1].
-#     #    ln -s $PWD ./dag_pkg
-#     #    python mars_entry_point.py dag_pkg/
-#     ENTRY_POINT = "src/jobs/materialize_large_cedar/__mars__.py"
-#     print(f"argv={sys.argv}")
-#     dag = import_github_package(folder=sys.argv[1], entry_point=ENTRY_POINT)
-#     print(f"_DAG=[{dag}]")
+    def test_jobs_cedar_imports(self):
+        root_path = whereami.repo_path("src", "jobs")  # /home/foo/Projects/mongo-etls/src/jobs
+        for ent in os.listdir(root_path):  # ent like "materialize_large_cedar" and "whereami.py"
+            ent_path = os.path.join(root_path, ent)
+            mars_path = os.path.join(
+                "src", "jobs", ent, "__mars__.py"
+            )  # src/jobs/materialize_foo/__mars__.py
+            full_mars_path = os.path.join(ent_path, "__mars__.py")
+            if os.path.isdir(ent_path) and os.path.exists(full_mars_path):
+                the_dag = run_entry_point(mars_path)
+                self.assertIsNotNone(the_dag, f"Job {ent} not exported properly")
