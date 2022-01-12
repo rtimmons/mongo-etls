@@ -21,5 +21,5 @@ SELECT  CAST(vs."_id" AS VARCHAR)  AS "_id",
         -- <COMMON_ETL_FIELDS>
         , LOCALTIMESTAMP AS "_extract_timestamp"
         -- </COMMON_ETL_FIELDS>
-FROM  patch_build_optimizer_atlas.evg.version_test_data AS vs
+FROM  "patch_build_optimizer_atlas"."evg"."version_test_data" AS vs
 

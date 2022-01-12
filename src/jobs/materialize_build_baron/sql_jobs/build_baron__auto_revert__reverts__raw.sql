@@ -13,5 +13,5 @@ SELECT  CAST(vs."_id" AS VARCHAR)  AS "_id",
         -- <COMMON_ETL_FIELDS>
         , LOCALTIMESTAMP AS "_extract_timestamp"
         -- </COMMON_ETL_FIELDS>
-FROM  dev_prod_build_baron_atlas.auto_revert.reverts AS vs
+FROM  "dev_prod_build_baron_atlas"."auto_revert"."reverts" AS vs
 
