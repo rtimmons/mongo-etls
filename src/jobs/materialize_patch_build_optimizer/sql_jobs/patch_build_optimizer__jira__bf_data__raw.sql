@@ -4,7 +4,19 @@
 -- DependsOn: {}
 -- </yaml>
 SELECT  CAST(vs."_id" AS VARCHAR)  AS "_id",
-        vs."bf_data"               AS "bf_data"
+        vs."assignee"              AS "assignee",
+        vs."created"               AS "created",
+        vs."createddate"           AS "createddate",
+        vs."failing_bv"            AS "failing_bv",
+        vs."failing_revision"      AS "failing_revision",
+        vs."failing_symptoms"      AS "failing_symptoms",
+        vs."failing_tasks"         AS "failing_tasks",
+        vs."failing_tests"         AS "failing_tests",
+        vs."failure_type"          AS "failure_type",
+        vs."key"                   AS "key",
+        vs."projects"              AS "projects",
+        vs."updated"               AS "updated",
+        vs."updateddate"           AS "updateddate"
         -- <COMMON_ETL_FIELDS>
         , LOCALTIMESTAMP AS "_extract_timestamp"
         -- </COMMON_ETL_FIELDS>

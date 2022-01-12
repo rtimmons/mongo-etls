@@ -185,7 +185,19 @@ Sources:
       - version_id
     jira:
       bf_data:
-      - bf_data
+      - assignee
+      - created
+      - createddate
+      - failing_bv
+      - failing_revision
+      - failing_symptoms
+      - failing_tasks
+      - failing_tests
+      - failure_type
+      - key
+      - projects
+      - updated
+      - updateddate
     symbols:
       mappings:
       - arch
