@@ -1,6 +1,6 @@
 
 Sources:
-  patch_build_optimizer:
+  patch_build_optimizer_atlas:
     evg:
       completed_versions:
       - activated
