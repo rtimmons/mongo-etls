@@ -2,7 +2,7 @@
 By convention we expose the _DAG object in a __mars__.py file.
 """
 
-from src.jobs.helpers import DagHelper
+from src.jobs.dag_helper import DagHelper
 
 _HELPER = DagHelper(__file__)
 
