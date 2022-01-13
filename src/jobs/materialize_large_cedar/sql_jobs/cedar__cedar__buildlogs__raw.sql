@@ -11,5 +11,9 @@ SELECT  CAST(vs."_id" AS VARCHAR)  AS "_id",
         -- <COMMON_ETL_FIELDS>
         , LOCALTIMESTAMP AS "_extract_timestamp"
         -- </COMMON_ETL_FIELDS>
+        , 'EXAMPLE DATA ONLY' AS "crude_commentary"
 FROM  "evergreen_cedar_atlas"."cedar"."buildlogs" AS vs
+-- TODO: The buildlogs table is too large to materialize in the 7h time limit imposed by MARS.
+--       We need to have an effective base+delta strategy here.
+LIMIT 1000
 
