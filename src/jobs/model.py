@@ -1,7 +1,7 @@
 """Domain model for objects in this repo."""
 import importlib
 import os
-from typing import Any, List, Optional, Set, Union
+from typing import List, Optional, Set, Union
 
 import yaml
 from mars_util.job_dag import JobDAG
@@ -80,7 +80,7 @@ class _MarsJob:
 
     def helper_tasks(self) -> List["_MarsJobTask"]:
         prefix = self.mars_namespace.repo.root
-        split = ["src", "jobs", *self.dir_path[len(prefix) + 1 :].split("/"), "__mars__"]
+        split = ["src", "jobs", *self.dir_path[len(prefix) + 1 :].split("/"), "__mars__"]  # noqa
         module = ".".join(split)
         m = importlib.import_module(module)
         helper: "DagHelper" = m._HELPER  # noqa
@@ -122,10 +122,27 @@ class _MarsJobTask:
     def dag_task(self) -> Task:
         return self._task
 
+    @property
+    def name(self) -> str:
+        return self._task.name
+
+    @property
+    def sql(self) -> Optional[str]:
+        if self._sql_file:
+            return self._sql_file.parsed_contents()
+        else:
+            return f"Unknown SQL: {self._task.TASK_TYPE}"
+
+    @property
+    def presto_destination(self) -> Optional["_PrestoTable"]:
+        return self._presto_table
+
 
 class _PrestoTable:
-    def __init__(self, name: str, presto_namespace: _PrestoNamespace):
+    def __init__(self, name: str, presto_namespace: Union[str, _PrestoNamespace]):
         self.name = name
+        if isinstance(presto_namespace, str):
+            presto_namespace = _PrestoNamespace(name=presto_namespace)
         self.presto_namespace = presto_namespace
 
     def dest_tgt(self):
@@ -227,14 +244,36 @@ class _SqlFile:
         return dict()
 
 
+def _prefix_lines(paragraph: str, prefix: str) -> str:
+    return "\n".join(f"{prefix}{line}" for line in paragraph.split("\n"))
+
+
+def _table_ize(mapping: dict):
+    longest = max(len(k) for k in mapping.keys())
+    for k, v in mapping.items():
+        print(f"- {k}: {' '*(longest-len(k))} {v}")
+
+
 def _main() -> None:
     repo = _Repo()
     for namespace in repo.mars_namespaces():
-        print(f"# {namespace.name}")
+        print(f"# MARS Namespace: `{namespace.name}`\n")
         for job in namespace.mars_jobs():
-            print(f"## {job.name}")
+            print(f"## MARS Job: `{job.name}`")
+            print(f"\nTasks:\n")
             for task in job.helper_tasks():
-                print(f"- {task}")
+                print(f"- {task.name}")
+            print()
+            for task in job.helper_tasks():
+                print(f"### Job Task: `{task.name}`")
+                metadata = {"MARS Namespace": f"`{namespace.name}`", "MARS Job": f"`{job.name}`"}
+                dest = task.presto_destination
+                if dest:
+                    metadata["Destination Presto Namespace"] = f"`{dest.presto_namespace.name}`"
+                    metadata["Destination Table"] = f"`{dest.name}`"
+                print()
+                _table_ize(metadata)
+                print(f"\nSQL:\n\n{_prefix_lines(task.sql,'    ')}\n")
 
 
 if __name__ == "__main__":

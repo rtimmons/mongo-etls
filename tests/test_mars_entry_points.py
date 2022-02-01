@@ -64,6 +64,7 @@ class EntryPointsTests(unittest.TestCase):
                 if os.path.isdir(ent_path) and os.path.exists(full_mars_path):
                     the_dag = run_entry_point(mars_path)
                     self.assertIsNotNone(the_dag, f"Job {ent} not exported properly")
+                    self.assertTrue(the_dag.is_valid())
                     found += 1
 
         # Basic sanity check that we found at least two jobs.
