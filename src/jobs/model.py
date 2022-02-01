@@ -1,15 +1,76 @@
-"""
-Helpers and wrappers that make usages of mars_util more consistent.
-"""
-import os.path
-from typing import Any, List, Optional, Union
+import importlib
+import os
+from typing import Optional, List, Union, Any
 
 import yaml
 from mars_util.job_dag import JobDAG
 from mars_util.task import PrestoTask
 from mars_util.task.destination import PrestoTableDestination
 
-import src.jobs.whereami
+from src.jobs import whereami
+
+
+class Repo:
+    def __init__(self, root: Optional[str] =None):
+        if root is None:
+            root = whereami.repo_path("src", "jobs")
+        self.root = root
+
+    def mars_namespaces(self) -> List["MarsNamespace"]:
+        out = []
+        for ent in os.listdir(self.root):
+            ent_path = os.path.join(self.root, ent)
+            if not os.path.isdir(ent_path):
+                continue
+            out.append(MarsNamespace(repo=self, name=ent, dir_path=ent_path))
+        return out
+
+
+class MarsNamespace:
+    def __init__(self, repo: Repo, name: str, dir_path: str):
+        self.repo = repo
+        self.name = name
+        self.dir_path = dir_path
+
+    def mars_jobs(self) -> List["MarsJob"]:
+        out = []
+        for ent in os.listdir(self.dir_path):
+            ent_path = os.path.join(self.dir_path, ent)
+            if not os.path.isdir(ent_path):
+                continue
+            out.append(MarsJob(mars_namespace=self,
+                               name=ent, dir_path=ent_path))
+        return out
+
+
+class PrestoNamespace:
+    pass
+
+
+class MarsJob:
+    def __init__(self, mars_namespace: MarsNamespace, name: str,
+                 dir_path: str):
+        self.mars_namespace = mars_namespace
+        self.name = name
+        self.dir_path = dir_path
+
+    def tasks(self) -> List["MarsJobTask"]:
+        prefix = self.mars_namespace.repo.root
+        split = ["src", "jobs", *self.dir_path[len(prefix)+1:].split("/"), "__mars__"]
+        module = ".".join(split)
+        m = importlib.import_module(module)
+        helper: "DagHelper" = m._HELPER
+        return helper._tasks
+
+
+class MarsJobTask:
+    def __init__(self, mars_job: MarsJob, helper: "DagHelper"):
+        self.helper = helper
+
+
+class PrestoTable:
+    pass
+
 
 PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
 
@@ -55,7 +116,7 @@ class DagHelper:
             Throws an exception if the indicated file is not found.
         :return: the SqlFile representation.
         """
-        path = src.jobs.whereami.repo_path(self._file_path, *child_path)
+        path = whereami.repo_path(self._file_path, *child_path)
         return _SqlFile([path])
 
     def add_task(self, task: Union[PrestoTask, str]) -> PrestoTask:
@@ -135,15 +196,13 @@ class _ConventionalPrestoTask(PrestoTask):
 _COMMENT_START = "-- "
 
 
-# This started as an external class (used in __mars__.py files) but ended up only
-# being needed in here. Perhaps refactor.
 class _SqlFile:
     def __init__(self, path: Union[List[str], str]):
         if isinstance(path, str):
             self._contents: Optional[str] = path
             self.path = None
         else:
-            self.path = src.jobs.whereami.repo_path(*path)
+            self.path = whereami.repo_path(*path)
             self._contents = None
 
     def location(self) -> str:
@@ -188,3 +247,17 @@ class _SqlFile:
             to_parse = "\n".join(yaml_lines)
             return yaml.safe_load(to_parse)
         return dict()
+
+
+def _main():
+    repo = Repo()
+    for namespace in repo.mars_namespaces():
+        print(f"# {namespace.name}")
+        for job in namespace.mars_jobs():
+            print(f"## {job.name}")
+            for task in job.tasks():
+                print(f"- {task}")
+
+
+if __name__ == "__main__":
+    _main()
