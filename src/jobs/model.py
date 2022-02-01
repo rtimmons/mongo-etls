@@ -1,6 +1,7 @@
+"""Domain model for objects in this repo."""
 import importlib
 import os
-from typing import Optional, List, Union, Any
+from typing import Any, List, Optional, Union
 
 import yaml
 from mars_util.job_dag import JobDAG
@@ -10,69 +11,71 @@ from mars_util.task.destination import PrestoTableDestination
 from src.jobs import whereami
 
 
-class Repo:
-    def __init__(self, root: Optional[str] =None):
+class _Repo:
+    """The repository of tasks. Lives in src/jobs."""
+
+    def __init__(self, root: Optional[str] = None):
+        """:param root: forced job root defaults to $repo/src/jobs. Useful for testing."""
         if root is None:
             root = whereami.repo_path("src", "jobs")
         self.root = root
 
-    def mars_namespaces(self) -> List["MarsNamespace"]:
+    def mars_namespaces(self) -> List["_MarsNamespace"]:
+        """Namespaces are subdirs of the repo e.g. `dev_prod` or `evergreen`."""
         out = []
         for ent in os.listdir(self.root):
             ent_path = os.path.join(self.root, ent)
             if not os.path.isdir(ent_path):
                 continue
-            out.append(MarsNamespace(repo=self, name=ent, dir_path=ent_path))
+            out.append(_MarsNamespace(repo=self, name=ent, dir_path=ent_path))
         return out
 
 
-class MarsNamespace:
-    def __init__(self, repo: Repo, name: str, dir_path: str):
+class _MarsNamespace:
+    def __init__(self, repo: _Repo, name: str, dir_path: str):
         self.repo = repo
         self.name = name
         self.dir_path = dir_path
 
-    def mars_jobs(self) -> List["MarsJob"]:
+    def mars_jobs(self) -> List["_MarsJob"]:
         out = []
         for ent in os.listdir(self.dir_path):
             ent_path = os.path.join(self.dir_path, ent)
             if not os.path.isdir(ent_path):
                 continue
-            out.append(MarsJob(mars_namespace=self,
-                               name=ent, dir_path=ent_path))
+            out.append(_MarsJob(mars_namespace=self, name=ent, dir_path=ent_path))
         return out
 
 
-class PrestoNamespace:
+class _PrestoNamespace:
     pass
 
 
-class MarsJob:
-    def __init__(self, mars_namespace: MarsNamespace, name: str,
-                 dir_path: str):
+class _MarsJob:
+    def __init__(self, mars_namespace: _MarsNamespace, name: str, dir_path: str):
         self.mars_namespace = mars_namespace
         self.name = name
         self.dir_path = dir_path
 
-    def tasks(self) -> List["MarsJobTask"]:
+    def tasks(self) -> List["_MarsJobTask"]:
         prefix = self.mars_namespace.repo.root
-        split = ["src", "jobs", *self.dir_path[len(prefix)+1:].split("/"), "__mars__"]
+        split = ["src", "jobs", *self.dir_path[len(prefix) + 1 :].split("/"), "__mars__"]
         module = ".".join(split)
         m = importlib.import_module(module)
-        helper: "DagHelper" = m._HELPER
-        return helper._tasks
+        helper: "DagHelper" = m._HELPER  # noqa
+        return helper._tasks  # noqa
 
 
-class MarsJobTask:
-    def __init__(self, mars_job: MarsJob, helper: "DagHelper"):
+class _MarsJobTask:
+    def __init__(self, mars_job: _MarsJob, helper: "DagHelper"):
         self.helper = helper
 
 
-class PrestoTable:
+class _PrestoTable:
     pass
 
 
-PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
+_PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
 
 
 class DagHelper:
@@ -170,7 +173,7 @@ class _ConventionalPrestoTask(PrestoTask):
         dest_name = _sanitize_name(name)
         args = {
             "name": name,
-            "conn_id": PRESTO_CONN,
+            "conn_id": _PRESTO_CONN,
             "sql_source": "config",
             "destination": PrestoTableDestination(
                 dest_tgt=f"awsdatacatalog.{helper.namespace}.{dest_name}",
@@ -249,8 +252,8 @@ class _SqlFile:
         return dict()
 
 
-def _main():
-    repo = Repo()
+def _main() -> None:
+    repo = _Repo()
     for namespace in repo.mars_namespaces():
         print(f"# {namespace.name}")
         for job in namespace.mars_jobs():
