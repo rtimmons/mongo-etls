@@ -1,7 +1,7 @@
 """Domain model for objects in this repo."""
 import importlib
 import os
-from typing import List, Optional, Set, Union
+from typing import Any, List, Optional, Set, Union
 
 import yaml
 from mars_util.job_dag import JobDAG
@@ -72,43 +72,54 @@ class _MarsJob:
         self.name = name
         self.dir_path = dir_path
         self.tasks: Set[_MarsJobTask] = set()
+        self._helper: Optional[DagHelper] = None
 
     def add_task(self, task: Union[None, Task, str], helper: "DagHelper") -> Task:
         task = _MarsJobTask(task=task, mars_job=self, presto_namespace=helper.presto_namespace)
         self.tasks.add(task)
         return task.dag_task()
 
+    def helper(self) -> Any:
+        if self._helper is None:
+            prefix = self.mars_namespace.repo.root
+            split = [
+                "src",
+                "jobs",
+                *self.dir_path[len(prefix) + 1 :].split("/"),
+                "__mars__",
+            ]  # noqa
+            module = ".".join(split)
+            m = importlib.import_module(module)
+            helper: "DagHelper" = m._HELPER  # noqa
+            helper.is_from_module(m)
+            self._helper = helper
+        return self._helper
+
     def helper_tasks(self) -> List["_MarsJobTask"]:
-        prefix = self.mars_namespace.repo.root
-        split = ["src", "jobs", *self.dir_path[len(prefix) + 1 :].split("/"), "__mars__"]  # noqa
-        module = ".".join(split)
-        m = importlib.import_module(module)
-        helper: "DagHelper" = m._HELPER  # noqa
-        return helper.mars_job.tasks  # noqa
+        return self.helper().mars_job.tasks  # noqa
 
 
 class _MarsJobTask:
     def __init__(
         self,
         mars_job: _MarsJob,
-        task: Union[None, Task, str],
-        presto_namespace: Optional[str] = None,
+        task: Union[Task, str],
+        presto_namespace: str,
     ):
         self._mars_job = mars_job
-        self._task = task
 
         self._presto_table: Optional[_PrestoTable] = None
         self._sql_file: Optional[_SqlFile]
-        if isinstance(self._task, str):
+        if isinstance(task, str):
             self._presto_table = _PrestoTable(
-                name=_sanitize_name(self._task), presto_namespace=presto_namespace
+                name=_sanitize_name(task), presto_namespace=presto_namespace
             )
             self._sql_file = _SqlFile(
                 os.path.join(self._mars_job.dir_path, "sql_jobs", f"{task}.sql")
             )
 
             self._task = PrestoTask(
-                name=self._task,
+                name=task,
                 conn_id=_PRESTO_CONN,
                 sql_source="config",
                 sql=self._sql_file.parsed_contents(),
@@ -118,6 +129,8 @@ class _MarsJobTask:
                     dest_format="PARQUET",
                 ),
             )
+        else:
+            self._task = task
 
     def dag_task(self) -> Task:
         return self._task
@@ -143,9 +156,9 @@ class _PrestoTable:
         self.name = name
         if isinstance(presto_namespace, str):
             presto_namespace = _PrestoNamespace(name=presto_namespace)
-        self.presto_namespace = presto_namespace
+        self.presto_namespace: _PrestoNamespace = presto_namespace
 
-    def dest_tgt(self):
+    def dest_tgt(self) -> str:
         return f"awsdatacatalog.{self.presto_namespace.name}.{self.name}"
 
 
@@ -178,6 +191,7 @@ class DagHelper:
         if not mars_job:
             mars_job = _MarsJob.from_file_path(self._file_path)
         self.mars_job = mars_job
+        self.doc: str = ""
 
     def add_task(self, task: Union[None, Task, str]) -> Task:
         """
@@ -196,6 +210,10 @@ class DagHelper:
         for task in self.mars_job.tasks:
             dag.register_tasks([task.dag_task()])
         return dag
+
+    def is_from_module(self, mod: Any) -> None:
+        """Indicate the containing __mars__ module."""
+        self.doc = getattr(mod, "__doc__", "")
 
 
 # TODO: this is to work around DP-1894
@@ -248,33 +266,45 @@ def _prefix_lines(paragraph: str, prefix: str) -> str:
     return "\n".join(f"{prefix}{line}" for line in paragraph.split("\n"))
 
 
-def _table_ize(mapping: dict):
+def _table_ize(mapping: dict) -> None:
     longest = max(len(k) for k in mapping.keys())
     for k, v in mapping.items():
         print(f"- {k}: {' '*(longest-len(k))} {v}")
 
 
-def _main() -> None:
+def print_docs_markdown() -> None:
+    """Print documentation for all tasks."""
     repo = _Repo()
     for namespace in repo.mars_namespaces():
         print(f"# MARS Namespace: `{namespace.name}`\n")
-        for job in namespace.mars_jobs():
-            print(f"## MARS Job: `{job.name}`")
-            print(f"\nTasks:\n")
-            for task in job.helper_tasks():
-                print(f"- {task.name}")
+
+        jobs = namespace.mars_jobs()
+        if jobs:
+            print("Jobs:\n")
+            for job in jobs:
+                print(f"- `{job.name}`")
             print()
+
+        for job in jobs:
+            print(f"## MARS Job: `{namespace.name}`.`{job.name}`")
+
+            if job.helper().doc:
+                print(job.helper().doc)
+
+            print("\nTasks:\n")
             for task in job.helper_tasks():
-                print(f"### Job Task: `{task.name}`")
+                print(f"- `{task.name}`")
+            print()
+
+            for task in job.helper_tasks():
+                print(f"### Job Task: `{namespace.name}`.`{job.name}`.`{task.name}`")
                 metadata = {"MARS Namespace": f"`{namespace.name}`", "MARS Job": f"`{job.name}`"}
                 dest = task.presto_destination
                 if dest:
-                    metadata["Destination Presto Namespace"] = f"`{dest.presto_namespace.name}`"
+                    if dest.presto_namespace:
+                        metadata["Destination Presto Namespace"] = f"`{dest.presto_namespace.name}`"
                     metadata["Destination Table"] = f"`{dest.name}`"
                 print()
                 _table_ize(metadata)
-                print(f"\nSQL:\n\n{_prefix_lines(task.sql,'    ')}\n")
-
-
-if __name__ == "__main__":
-    _main()
+                if task.sql:
+                    print(f"\nSQL:\n\n{_prefix_lines(task.sql,'    ')}\n")
