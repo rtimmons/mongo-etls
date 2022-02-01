@@ -361,6 +361,7 @@ def print_docs_markdown() -> None:
                 dest = task.presto_destination
                 if dest:
                     if dest.presto_namespace:
+                        metadata["Destination Target"] = f"`{dest.dest_tgt()}`"
                         metadata["Destination Presto Namespace"] = f"`{dest.presto_namespace.name}`"
                     metadata["Destination Table"] = f"`{dest.name}`"
                 print()

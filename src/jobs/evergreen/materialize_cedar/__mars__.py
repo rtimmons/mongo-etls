@@ -4,7 +4,7 @@ By convention we expose the _DAG object in a __mars__.py file.
 
 from src.jobs.model import DagHelper
 
-_HELPER = DagHelper(__file__)
+_HELPER = DagHelper(__file__, presto_namespace="evergreen_base")
 
 
 cedar__cedar__perf_results__raw = _HELPER.add_task("cedar__cedar__perf_results__raw")
