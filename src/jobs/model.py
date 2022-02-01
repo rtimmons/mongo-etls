@@ -10,6 +10,25 @@ from mars_util.task.destination import PrestoTableDestination
 
 from src.jobs import whereami
 
+# The implementation here is a bit shaky. The primary purpose
+# is twofold:
+#
+# 1. Provide the `DagHelper` class used by __mars__ modules.
+#    This lets you easily construct MARS DAGs using simple
+#    conventions.
+# 2. Provide documentation. Starting from a `_Repo` object,
+#    you can traverse around the object graph for various
+#    MARS and Presto things. Right now this is used to
+#    produce a single super verbose markdown document, but
+#    future enhancements could make the structure more
+#    navigable.
+#
+# If the below structure doesn't work out long-term that's fine.
+#
+# There is minimal testing of this code. Mostly only around DagHelper.
+# See the test_mars_entry_points.py test. This does only minimal
+# traversal of the object graph.
+
 
 class _Repo:
     """The repository of tasks. Lives in src/jobs."""
@@ -21,7 +40,6 @@ class _Repo:
         self.root = root
 
     def mars_namespaces(self) -> List["_MarsNamespace"]:
-        """Namespaces are subdirs of the repo e.g. `dev_prod` or `evergreen`."""
         out = []
         for ent in os.listdir(self.root):
             ent_path = os.path.join(self.root, ent)
@@ -32,6 +50,8 @@ class _Repo:
 
 
 class _MarsNamespace:
+    """Namespaces are subdirs of the repo e.g. `dev_prod` or `evergreen`."""
+
     @staticmethod
     def from_file_path(dir_path: str) -> "_MarsNamespace":
         name = os.path.basename(dir_path)
@@ -54,12 +74,29 @@ class _MarsNamespace:
         return out
 
 
+_NAMESPACES = dict()
+
+
 class _PrestoNamespace:
+    """dev_prod_live or evergreen_base. No good way to specify these for now."""
+
+    @staticmethod
+    def from_name(name: str) -> "_PrestoNamespace":
+        if name not in _NAMESPACES:
+            _NAMESPACES[name] = _PrestoNamespace(name=name)
+        return _NAMESPACES[name]
+
     def __init__(self, name: str):
         self.name = name
+        self.tables: Set[_PrestoTable] = set()
+
+    def add_table(self, table: "_PrestoTable") -> None:
+        self.tables.add(table)
 
 
 class _MarsJob:
+    """A job has many tasks."""
+
     @staticmethod
     def from_file_path(file_path: str) -> "_MarsJob":
         namespace_dir = os.path.dirname(file_path)
@@ -74,7 +111,7 @@ class _MarsJob:
         self.tasks: Set[_MarsJobTask] = set()
         self._helper: Optional[DagHelper] = None
 
-    def add_task(self, task: Union[None, Task, str], helper: "DagHelper") -> Task:
+    def add_task(self, task: Union[Task, str], helper: "DagHelper") -> Task:
         task = _MarsJobTask(task=task, mars_job=self, presto_namespace=helper.presto_namespace)
         self.tasks.add(task)
         return task.dag_task()
@@ -85,7 +122,7 @@ class _MarsJob:
             split = [
                 "src",
                 "jobs",
-                *self.dir_path[len(prefix) + 1 :].split("/"),
+                *self.dir_path[len(prefix) + 1 :].split("/"),  # noqa
                 "__mars__",
             ]  # noqa
             module = ".".join(split)
@@ -100,6 +137,14 @@ class _MarsJob:
 
 
 class _MarsJobTask:
+    """
+    Do a unit of work e.g. run a SELECT and insert to Presto.
+
+    As we support other task types, we may want to refactor the
+    documentation-generation pieces out into independent
+    wrappers or helpers.
+    """
+
     def __init__(
         self,
         mars_job: _MarsJob,
@@ -112,7 +157,7 @@ class _MarsJobTask:
         self._sql_file: Optional[_SqlFile]
         if isinstance(task, str):
             self._presto_table = _PrestoTable(
-                name=_sanitize_name(task), presto_namespace=presto_namespace
+                name=_sanitize_name(task), presto_namespace=presto_namespace, task=self
             )
             self._sql_file = _SqlFile(
                 os.path.join(self._mars_job.dir_path, "sql_jobs", f"{task}.sql")
@@ -152,17 +197,28 @@ class _MarsJobTask:
 
 
 class _PrestoTable:
-    def __init__(self, name: str, presto_namespace: Union[str, _PrestoNamespace]):
+    """
+    Presto (destination) tables belong to _PrestoNamespaces and
+    are populated by means of a _MarsJobTask.
+    """
+
+    def __init__(
+        self, name: str, presto_namespace: Union[str, _PrestoNamespace], task: _MarsJobTask
+    ):
         self.name = name
         if isinstance(presto_namespace, str):
-            presto_namespace = _PrestoNamespace(name=presto_namespace)
-        self.presto_namespace: _PrestoNamespace = presto_namespace
+            self.presto_namespace = _PrestoNamespace.from_name(name=presto_namespace)
+        else:
+            self.presto_namespace = presto_namespace
+        self.task = task
+        self.presto_namespace.add_table(self)
 
     def dest_tgt(self) -> str:
         return f"awsdatacatalog.{self.presto_namespace.name}.{self.name}"
 
 
 _PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
+# ↑ Would be nice to doc this.
 
 
 class DagHelper:
@@ -193,9 +249,12 @@ class DagHelper:
         self.mars_job = mars_job
         self.doc: str = ""
 
-    def add_task(self, task: Union[None, Task, str]) -> Task:
+    def add_task(self, task: Union[Task, str]) -> Task:
         """
-        :param task: TODO
+        :param task:
+            Either a pre-formed MARS Task or a string representing
+            a file in sql_jobs that will be used to populate the Presto
+            table with the same name.
         :return
             The generated task. Use this to add dependencies or otherwise
             interact with it using the MARS dag object primitives.
