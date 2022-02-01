@@ -161,7 +161,10 @@ class _SqlFile:
             line = line.rstrip()
             if not line.startswith(_COMMENT_START):
                 break
-            contents = line[len(_COMMENT_START):]  # "-- <yaml>" -> "<yaml>"
+
+            # "-- <yaml>" -> "<yaml>":
+            contents = line[len(_COMMENT_START) :]  # noqa (pep8-E203 vs black)
+
             if contents.startswith("<yaml>"):
                 continue
             if contents.startswith("</yaml>"):
