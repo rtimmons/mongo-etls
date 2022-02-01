@@ -1,0 +1,11 @@
+
+Sources:
+  evergreen_cedar_atlas:
+    cedar:
+      perf_results:
+      - _id
+      - analysis
+      - completed_at
+      - created_at
+      - info
+      - rollups

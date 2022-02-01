@@ -1,6 +1,6 @@
 -- <yaml>
 -- DependsOn:
---   time_series: awsdatacatalog.dev_prod_live.time_series
+--   series: awsdatacatalog.dev_prod_live.performance__expanded_metrics__time_series__raw
 -- </yaml>
 
 SELECT series."_id"                         AS "series_id",
