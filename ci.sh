@@ -2,9 +2,6 @@
 
 set -eou pipefail
 
-# TODO: mypy
-# TODO: pytest
-# TODO: more pure CI barrier
 
 _pip() {
     # see TIG-2862

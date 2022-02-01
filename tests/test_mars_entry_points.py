@@ -51,18 +51,22 @@ class EntryPointsTests(unittest.TestCase):
     def test_jobs_mars_imports(self):
         root_path = whereami.repo_path("src", "jobs")  # /home/foo/Projects/mongo-etls/src/jobs
         found = 0
-        for ent in os.listdir(root_path):  # ent like "materialize_large_cedar" and "whereami.py"
-            ent_path = os.path.join(root_path, ent)
-            mars_path = os.path.join(
-                "src", "jobs", ent, "__mars__.py"
-            )  # src/jobs/materialize_foo/__mars__.py
-            full_mars_path = os.path.join(ent_path, "__mars__.py")
-            if os.path.isdir(ent_path) and os.path.exists(full_mars_path):
-                the_dag = run_entry_point(mars_path)
-                self.assertIsNotNone(the_dag, f"Job {ent} not exported properly")
-                found += 1
+        for namespace in os.listdir(root_path):
+            namespace_path = os.path.join(root_path, namespace)
+            if not os.path.isdir(namespace_path):
+                continue
+            for ent in os.listdir(namespace_path):
+                ent_path = os.path.join(namespace_path, ent)
+                mars_path = os.path.join(
+                    "src", "jobs", namespace, ent, "__mars__.py"
+                )  # src/jobs/dev_prod/materialize_foo/__mars__.py
+                full_mars_path = os.path.join(ent_path, "__mars__.py")
+                if os.path.isdir(ent_path) and os.path.exists(full_mars_path):
+                    the_dag = run_entry_point(mars_path)
+                    self.assertIsNotNone(the_dag, f"Job {ent} not exported properly")
+                    found += 1
 
         # Basic sanity check that we found at least two jobs.
         # Consider bumping this as more jobs are added
         # or if the above logic is changed in any real way.
-        self.assertGreaterEqual(found, 3)
+        self.assertGreaterEqual(found, 5)
