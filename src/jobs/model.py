@@ -1,11 +1,11 @@
 """Domain model for objects in this repo."""
 import importlib
 import os
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Set, Union
 
 import yaml
 from mars_util.job_dag import JobDAG
-from mars_util.task import PrestoTask
+from mars_util.task import PrestoTask, Task
 from mars_util.task.destination import PrestoTableDestination
 
 from src.jobs import whereami
@@ -32,6 +32,13 @@ class _Repo:
 
 
 class _MarsNamespace:
+    @staticmethod
+    def from_file_path(dir_path: str) -> "_MarsNamespace":
+        name = os.path.basename(dir_path)
+        repo_path = os.path.dirname(dir_path)
+        repo = _Repo(repo_path)
+        return _MarsNamespace(repo=repo, name=name, dir_path=dir_path)
+
     def __init__(self, repo: _Repo, name: str, dir_path: str):
         self.repo = repo
         self.name = name
@@ -48,31 +55,81 @@ class _MarsNamespace:
 
 
 class _PrestoNamespace:
-    pass
+    def __init__(self, name: str):
+        self.name = name
 
 
 class _MarsJob:
+    @staticmethod
+    def from_file_path(file_path: str) -> "_MarsJob":
+        namespace_dir = os.path.dirname(file_path)
+        name = os.path.basename(file_path)
+        mars_namespace = _MarsNamespace.from_file_path(namespace_dir)
+        return _MarsJob(mars_namespace=mars_namespace, name=name, dir_path=file_path)
+
     def __init__(self, mars_namespace: _MarsNamespace, name: str, dir_path: str):
         self.mars_namespace = mars_namespace
         self.name = name
         self.dir_path = dir_path
+        self.tasks: Set[_MarsJobTask] = set()
 
-    def tasks(self) -> List["_MarsJobTask"]:
+    def add_task(self, task: Union[None, Task, str], helper: "DagHelper") -> Task:
+        task = _MarsJobTask(task=task, mars_job=self, presto_namespace=helper.presto_namespace)
+        self.tasks.add(task)
+        return task.dag_task()
+
+    def helper_tasks(self) -> List["_MarsJobTask"]:
         prefix = self.mars_namespace.repo.root
         split = ["src", "jobs", *self.dir_path[len(prefix) + 1 :].split("/"), "__mars__"]
         module = ".".join(split)
         m = importlib.import_module(module)
         helper: "DagHelper" = m._HELPER  # noqa
-        return helper._tasks  # noqa
+        return helper.mars_job.tasks  # noqa
 
 
 class _MarsJobTask:
-    def __init__(self, mars_job: _MarsJob, helper: "DagHelper"):
-        self.helper = helper
+    def __init__(
+        self,
+        mars_job: _MarsJob,
+        task: Union[None, Task, str],
+        presto_namespace: Optional[str] = None,
+    ):
+        self._mars_job = mars_job
+        self._task = task
+
+        self._presto_table: Optional[_PrestoTable] = None
+        self._sql_file: Optional[_SqlFile]
+        if isinstance(self._task, str):
+            self._presto_table = _PrestoTable(
+                name=_sanitize_name(self._task), presto_namespace=presto_namespace
+            )
+            self._sql_file = _SqlFile(
+                os.path.join(self._mars_job.dir_path, "sql_jobs", f"{task}.sql")
+            )
+
+            self._task = PrestoTask(
+                name=self._task,
+                conn_id=_PRESTO_CONN,
+                sql_source="config",
+                sql=self._sql_file.parsed_contents(),
+                destination=PrestoTableDestination(
+                    dest_tgt=self._presto_table.dest_tgt,
+                    dest_replace=True,
+                    dest_format="PARQUET",
+                ),
+            )
+
+    def dag_task(self) -> Task:
+        return self._task
 
 
 class _PrestoTable:
-    pass
+    def __init__(self, name: str, presto_namespace: _PrestoNamespace):
+        self.name = name
+        self.presto_namespace = presto_namespace
+
+    def dest_tgt(self):
+        return f"awsdatacatalog.{self.presto_namespace.name}.{self.name}"
 
 
 _PRESTO_CONN = "920d5dfe-33ba-402a-b3ed-67ba21c25582"
@@ -92,72 +149,36 @@ class DagHelper:
     to the directory of the __mars__ file itself.
     """
 
-    def __init__(self, file_path: str, namespace: Optional[str] = None):
-        """
-        :param file_path:
-            path to file where subsequent `read_file`, `add_task`, etc. will look.
-        :param namespace:
-            To which Presto namespace should destination tables belong.
-            Default is "dev_prod_live".
-        """
-        self._tasks: List[PrestoTask] = []
+    def __init__(
+        self,
+        file_path: str,
+        mars_job: Optional[_MarsJob] = None,
+        presto_namespace: Optional[str] = None,
+    ):
+        """:param file_path: the __file__ value from the __mars__ file."""
         self._file_path = os.path.dirname(file_path)
+        self.presto_namespace = "dev_prod_live" if not presto_namespace else presto_namespace
+        if not mars_job:
+            mars_job = _MarsJob.from_file_path(self._file_path)
+        self.mars_job = mars_job
 
-        if namespace is None:
-            namespace = "dev_prod_live"
-        self._namespace = namespace
-
-    @property
-    def namespace(self) -> str:
-        """:return To which Presto namespace should destination tables belong."""
-        return self._namespace
-
-    def read_file(self, *child_path: str) -> "_SqlFile":
+    def add_task(self, task: Union[None, Task, str]) -> Task:
         """
-        :param child_path:
-            Sub-path rooted at dirname of file passed into ctor. E.g. sql_jobs/foo.sql.
-            Throws an exception if the indicated file is not found.
-        :return: the SqlFile representation.
-        """
-        path = whereami.repo_path(self._file_path, *child_path)
-        return _SqlFile([path])
-
-    def add_task(self, task: Union[PrestoTask, str]) -> PrestoTask:
-        """
-        Add a new or generated PrestoTask.
-
-        :param task:
-            If given a PrestoTask will add to the internal task registry as-is.
-
-            If given a string, will create a conventional Presto task that assumes
-
-            1. The source sql is located at sql_jobs/{task}.sql
-            2. The destination is a parquet table in dev_prod_live.
-               The destination table's name is 'task' (with - replaced with _)
+        :param task: TODO
         :return
-            The generated (or passed-in) task. Use this to add dependencies or otherwise
+            The generated task. Use this to add dependencies or otherwise
             interact with it using the MARS dag object primitives.
         """
-        if not isinstance(task, PrestoTask):
-            task = _ConventionalPrestoTask(name=task, helper=self)
-        self._tasks.append(task)
-        return task
+        return self.mars_job.add_task(task=task, helper=self)
 
     def extract(self) -> JobDAG:
         """
         :return: The JobDag that includes all tasks created or passed into add_task.
         """
         dag = JobDAG()
-        dag.register_tasks(list(set(self._tasks)))
+        for task in self.mars_job.tasks:
+            dag.register_tasks([task.dag_task()])
         return dag
-
-    def __str__(self) -> str:
-        out = ["DagHelper("]
-        for task in self._tasks:
-            out.append(str(task))
-            out.append(", ")
-        out.append(")")
-        return "".join(out)
 
 
 # TODO: this is to work around DP-1894
@@ -165,60 +186,14 @@ def _sanitize_name(name: str) -> str:
     return name.replace("-", "_")
 
 
-class _ConventionalPrestoTask(PrestoTask):
-    def __init__(self, name: str, helper: DagHelper, **other_args: Any):
-        self._name = name
-        self._helper = helper
-
-        dest_name = _sanitize_name(name)
-        args = {
-            "name": name,
-            "conn_id": _PRESTO_CONN,
-            "sql_source": "config",
-            "destination": PrestoTableDestination(
-                dest_tgt=f"awsdatacatalog.{helper.namespace}.{dest_name}",
-                dest_replace=True,
-                dest_format="PARQUET",
-            ),
-        }
-        self._sql_file: Optional[_SqlFile] = None
-        if "sql" not in other_args:
-            self._sql_file = self._helper.read_file("sql_jobs", f"{name}.sql")
-            args["sql"] = self._sql_file.parsed_contents()
-        else:
-            self._sql_file = None
-        args.update(other_args)
-
-        super().__init__(**args)
-        helper.add_task(self)
-
-    def __str__(self) -> str:
-        return f"ConventionalPrestoTask({self._name}, {self._sql_file})"
-
-
 _COMMENT_START = "-- "
 
 
 class _SqlFile:
-    def __init__(self, path: Union[List[str], str]):
-        if isinstance(path, str):
-            self._contents: Optional[str] = path
-            self.path = None
-        else:
-            self.path = whereami.repo_path(*path)
-            self._contents = None
-
-    def location(self) -> str:
-        return self.path if self.path else "InlineContents"
-
-    def __str__(self) -> str:
-        return f"SQLFile:{self.parsed_contents()}@{self.location()}"
+    def __init__(self, path: str):
+        self.path = path
 
     def contents_lines(self) -> List[str]:
-        if self._contents:
-            out = self._contents.split("\n")
-            return out
-        assert self.path is not None
         with open(self.path, "r") as handle:
             return [line.rstrip() for line in handle.readlines()]
 
@@ -258,7 +233,7 @@ def _main() -> None:
         print(f"# {namespace.name}")
         for job in namespace.mars_jobs():
             print(f"## {job.name}")
-            for task in job.tasks():
+            for task in job.helper_tasks():
                 print(f"- {task}")
 
 
