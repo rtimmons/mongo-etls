@@ -28,10 +28,25 @@ class DagHelper:
     to the directory of the __mars__ file itself.
     """
 
-    def __init__(self, file_path: str):
-        """:param file_path: path to file where subsequent `read_file`, `add_task`, etc. will look."""
+    def __init__(self, file_path: str, namespace: Optional[str] = None):
+        """
+        :param file_path:
+            path to file where subsequent `read_file`, `add_task`, etc. will look.
+        :param namespace:
+            To which Presto namespace should destination tables belong.
+            Default is "dev_prod_live".
+        """
         self._tasks: List[PrestoTask] = []
         self._file_path = os.path.dirname(file_path)
+
+        if namespace is None:
+            namespace = "dev_prod_live"
+        self._namespace = namespace
+
+    @property
+    def namespace(self) -> str:
+        """:return To which Presto namespace should destination tables belong."""
+        return self._namespace
 
     def read_file(self, *child_path: str) -> "_SqlFile":
         """
@@ -97,7 +112,7 @@ class _ConventionalPrestoTask(PrestoTask):
             "conn_id": PRESTO_CONN,
             "sql_source": "config",
             "destination": PrestoTableDestination(
-                dest_tgt=f"awsdatacatalog.dev_prod_live.{dest_name}",
+                dest_tgt=f"awsdatacatalog.{helper.namespace}.{dest_name}",
                 dest_replace=True,
                 dest_format="PARQUET",
             ),
@@ -155,7 +170,6 @@ class _SqlFile:
         return "\n".join(self.parsed_lines())
 
     def front_matter(self) -> dict:
-        # TODO: the <yaml> thing is a bit hokey and not really supported
         yaml_lines = []
         for line in self.contents_lines():
             line = line.rstrip()
