@@ -12,6 +12,10 @@ cd dev-prod-etls
 
 When creating new jobs or components of the data-pipeline, please refer to the [Policies](./docs/policies.md) before sending PRs.
 
+## Note on the `dag_pkg` symlink
+
+The `dag_pkg` is a symlink that points to the repo root. I.e. `ln -s . dag_pkg`. This is needed to resemble the checkout used by MARS as mimicked by the entry points test. Someone more clever than I at python pathing and packaging may be able to get around it.
+
 ## TODO
 
 - SQL and ETL explainers or links for those who are new to writing ETLs and/or nontrivial SQL.

@@ -1,0 +1,82 @@
+
+Sources:
+  dev_prod_build_baron_atlas:
+    auto_revert:
+      failed_tasks:
+      - build_id
+      - build_variant
+      - date_created
+      - display_name
+      - execution
+      - order
+      - project_id
+      - status
+      - status_details
+      - task_id
+      - version_id
+      revert_candidates:
+      - failing_tests
+      - task_id
+      - version_id
+      reverts:
+      - branch
+      - repo
+      - revert_commit
+      - reverted_commit
+      - ticket
+      - time_reverted
+    buildbaron:
+      auto_resolution_rules:
+      - active
+      - bf_key
+      - context
+      - created_date
+      - expiration
+      - resolution
+      - rules
+      - user_id
+      bfg_context_attributes:
+      - bfg_auto_resolve_age
+      - bfg_auto_resolve_status
+      - triage_context
+      bfg_contexts:
+      - name
+      - priority
+      - rules
+      bfg_contexts_audit:
+      - auth_user
+      - new_rule
+      - previous_rule
+      - timestamp
+      bfg_key:
+      - bfg_key
+      bfgs:
+      - attributes
+      - clone_id
+      - completion_time
+      - events
+      - execution
+      - failing_tests
+      - faults
+      - logs
+      - suggestions
+      - task_id
+      bfs:
+      - created
+      - key
+      - resolved
+      - status
+      - summary
+      - symptom
+      - updated
+      patch_failures:
+      - attributes
+      - clone_id
+      - completion_time
+      - events
+      - execution
+      - faults
+      - logs
+      - suggestions
+      - task_id
+
