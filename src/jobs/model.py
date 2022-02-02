@@ -238,10 +238,23 @@ class DagHelper:
     def __init__(
         self,
         file_path: str,
-        mars_job: Optional[_MarsJob] = None,
         presto_namespace: Optional[str] = None,
+        mars_job: Optional[_MarsJob] = None,
     ):
-        """:param file_path: the __file__ value from the __mars__ file."""
+        """
+        :param file_path:
+            The `__file__` value from the `__mars__.py` file creating this object.
+        :param presto_namespace:
+            In which presto namespace should the results of queries be to. Default
+            is "dev_prod_live" where most raw and view data live.
+        :param mars_job:
+            The MARS job name that owns this helper. This is used primarily in other
+            discovery mechanisms where we want to e.g. find the job that begot a table,
+            and this parameter is passed in when doing these kinds of "reverse lookups".
+            If not specified, the file path and directory structure will be used to figure
+            this out. If the `__mars__.py` file is in folder X, we will
+            assume the mars_job is X.
+        """
         self._file_path = os.path.dirname(file_path)
         self.presto_namespace = "dev_prod_live" if not presto_namespace else presto_namespace
         if not mars_job:

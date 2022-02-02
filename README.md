@@ -17,6 +17,7 @@ When creating new jobs or components of the data-pipeline, please refer to the [
 - SQL and ETL explainers or links for those who are new to writing ETLs and/or nontrivial SQL.
 - Python tooling for creating jobs and documentation
 - The initial set of jobs
+- Rename the `sql_jobs` dirs to `sql_tasks`
 - Instructions for how to create MARS jobs
 - Evergreen project
 - Lockfile equivalents for requirements.txt file(s)
