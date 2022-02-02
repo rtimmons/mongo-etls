@@ -17,8 +17,3 @@ types-PyYAML
 
 # docs
 markdown
-
---extra-index-url https://pypi.mongodb.name/ mars-util
-
-
-

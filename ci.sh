@@ -107,9 +107,9 @@ if ! _pip --version >/dev/null 2>&1; then
 fi
 
 
-# Check for etls-setup-done-v3 which we create at the end of setup.
+# Check for etls-setup-done-v4 which we create at the end of setup.
 # This prevents half-setup environments.
-if [[ ! -d "${ETLS_REPO_ROOT}/${_etls_venv}" || ! -e "${ETLS_REPO_ROOT}/${_etls_venv}/etls-setup-done-v3" ]]; then
+if [[ ! -d "${ETLS_REPO_ROOT}/${_etls_venv}" || ! -e "${ETLS_REPO_ROOT}/${_etls_venv}/etls-setup-done-v4" ]]; then
     rm -rf "${ETLS_REPO_ROOT:?}/${_etls_venv}"
 
     python3 -m venv "${ETLS_REPO_ROOT}/${_etls_venv}"
@@ -123,6 +123,7 @@ if [[ ! -d "${ETLS_REPO_ROOT}/${_etls_venv}" || ! -e "${ETLS_REPO_ROOT}/${_etls_
 
     # Install etls requirements
     _pip install -r "${ETLS_REPO_ROOT}/requirements-dev.txt"
+    _pip install -r "${ETLS_REPO_ROOT}/requirements-external.txt"
     _pip install -r "${ETLS_REPO_ROOT}/requirements-mars.txt"
 
     # _pip freeze > "pip-requirements.txt" 2>/dev/null
@@ -131,7 +132,7 @@ if [[ ! -d "${ETLS_REPO_ROOT}/${_etls_venv}" || ! -e "${ETLS_REPO_ROOT}/${_etls_
     # (Don't use the sha for now but might in the future to determine
     # if we need to run pip install again or something.)
     pushd "${ETLS_REPO_ROOT}" >/dev/null
-        git rev-parse HEAD > "${ETLS_REPO_ROOT}/${_etls_venv}/etls-setup-done-v3"
+        git rev-parse HEAD > "${ETLS_REPO_ROOT}/${_etls_venv}/etls-setup-done-v4"
     popd >/dev/null
 fi
 
