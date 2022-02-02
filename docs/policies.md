@@ -186,18 +186,19 @@ To this end, only leads and above have permissions to create new jobs, and all j
 
 This is still WIP and needs some more examples to feel confident in what scales to complexity.
 
-- Raw (source) tables are named by `${source}_${db}_${collection}__raw`
+- Raw (source) tables are named by `${source}__${db}__${collection}__raw`
     - `source` is the name of the source Atlas federation with `dev_prod`, `evergreen`, and `_atlas` removed.
     - `db` is the name of the Atlas database.
     - `collection` is the name of the collection.
     - Example: `build_baron__auto_revert__revert_candidates__raw`
+    - Note: We replace dashes with underscores.
 - Intermediate tables (e.g. unnesting or similar used to make views or other operations more tractable) should have an `_intermediate` suffix e.g. `build_baron__auto_revert__revert_candidates_unrolled_intermediate`
-- View (API/destination) tables are named following `v_${source}_${entity}_v${version}`
+- View (API/destination) tables are named following `v__${source}__${entity}__v${version}`
     - `source` is arbitrary but gives a namespace for entities. Example projects would be "evergreen", "bf_manager", "results", etc. The `source` from the raw table is a good starting point.
     - `entity` is the **plural** version of the nouns that live in the table. Examples would be "project_versions", "correctness_results", "bfs", etc.
     - `version` starts at 1 and is incremented whenever there is a breaking change. See the breaking changes policy for more info
-    - Example: `v_results_correctness_results_v1`
-    - The `v_` prefix allows for easy exploration of the supported views in the catalog.
+    - Example: `v__results__correctness_results__v1`
+    - The `v__` prefix allows for easy exploration of the supported views in the catalog.
 
 
 ## TODO:

@@ -1,0 +1,37 @@
+
+Sources:
+  # _atlas:
+  #   database:
+  #     table:
+  #       - column
+  dev_prod_performance_atlas:
+    expanded_metrics:
+      change_points:
+      - algorithm
+      - calculated_on
+      - cedar_perf_result_id
+      - order
+      - percent_change
+      - time_series_info
+      - triage
+      - version
+      time_series:
+      - data
+      - lastsuccessfulupdate
+      - lastupdateattempt
+      - measurement
+      - project
+      - task
+      - test
+      - updatefailures
+      - variant
+      versions:
+      - author
+      - author_email
+      - branch
+      - commit
+      - commit_date
+      - evg_create_date
+      - message
+      - repo_full_name
+      - version_id
