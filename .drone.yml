@@ -1,0 +1,27 @@
+kind: pipeline
+type: kubernetes
+name: dev-prod-etls
+
+platform:
+  os: linux
+
+steps:
+  - name: publish-presto-image
+    image: plugins/kaniko-ecr
+    settings:
+      create_repository: true
+      dockerfile: docker-images/presto/Dockerfile
+      registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+      repo: devprod-tips/${DRONE_REPO_NAME}
+      tags:
+        - git-${DRONE_COMMIT_SHA:0:7}-presto
+        - latest-presto
+      access_key:
+        from_secret: ecr_access_key
+      secret_key:
+        from_secret: ecr_secret_key
+    when:
+      branch:
+        - main
+      event:
+        - push

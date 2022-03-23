@@ -1,0 +1,59 @@
+metadata:
+  name: my-presto-query
+  namespace: devprod-tips
+spec:
+  entrypoint: presto-task
+  volumes:
+  - name: presto-secret-vol
+    secret:
+      secretName: presto-argo
+  arguments:
+    parameters:
+      - name: host
+        value: "presto-gateway.staging.corp.mongodb.com"
+      - name: port
+        value: 443
+      - name: catalog
+        value: "awsdatacatalog"
+      - name: sql
+        value: "SELECT * FROM system.runtime.nodes"
+      - name: destination
+        value: "stdout"
+  templates:
+    - name: presto-task
+      inputs:
+        parameters:
+          - name: host
+          - name: port
+          - name: catalog
+          - name: sql
+          - name: destination
+      container:
+        name: main
+        image: 795250896452.dkr.ecr.us-east-1.amazonaws.com/devprod-tips/dev-prod-etls:latest-presto
+        command: [python, /app/run_presto.py, presto-task]
+        args:
+          - "--host"
+          - "{{inputs.parameters.host}}"
+          - "--port"
+          - "{{inputs.parameters.port}}"
+          - "--catalog"
+          - "{{inputs.parameters.catalog}}"
+          - "--sql"
+          - "{{inputs.parameters.sql}}"
+          - "--destination"
+          - "{{inputs.parameters.destination}}"
+        env:
+        - name: presto-id
+          valueFrom:
+            secretKeyRef:
+              name: presto-argo
+              key: presto-id
+        - name: presto-secret
+          valueFrom:
+            secretKeyRef:
+              name: presto-argo
+              key: presto-secret
+        volumeMounts:
+        - name: presto-secret-vol
+          mountPath: "/secret/presto-secret-vol"
