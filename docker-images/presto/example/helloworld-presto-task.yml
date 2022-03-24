@@ -44,16 +44,16 @@ spec:
           - "--destination"
           - "{{inputs.parameters.destination}}"
         env:
-        - name: presto-id
+        - name: PRESTO_ID
           valueFrom:
             secretKeyRef:
               name: presto-argo
-              key: presto-id
-        - name: presto-secret
+              key: PRESTO_ID
+        - name: PRESTO_SECRET
           valueFrom:
             secretKeyRef:
               name: presto-argo
-              key: presto-secret
+              key: PRESTO_SECRET
         volumeMounts:
         - name: presto-secret-vol
           mountPath: "/secret/presto-secret-vol"

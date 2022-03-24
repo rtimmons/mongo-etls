@@ -1,5 +1,6 @@
 """Run a presto query."""
 import abc
+import os
 from typing import Generator
 
 import click
@@ -72,8 +73,8 @@ def cli(ctx: click.Context) -> None:
 )
 def presto_task(host: str, port: int, catalog: str, sql: str, destination: str) -> None:
     """Run a presto task."""
-    presto_id = "vlad.rachev@mongodb.com"
-    presto_secret = "RFM6cdm*jpd5whz8gae"
+    presto_id = os.environ["PRESTO_ID"]
+    presto_secret = os.environ["PRESTO_SECRET"]
     conn = presto.dbapi.connect(
         host=host,
         port=port,
