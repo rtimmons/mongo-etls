@@ -1,0 +1,64 @@
+[
+    {
+        "name": "sync partition metadata",
+        "type": "presto",
+        "conn_id": "[@dag-eval presto_conn_id @]",
+        "sql_source": "github",
+        "sql_script_conn": "[@dag-eval github_conn_id @]",
+        "sql_script_git_repo": "10gen/dev-prod-etls",
+        "sql_script_name": "src/jobs/dev_prod/materialize_historical_test_data/sql/sync_partition_metadata.sql",
+        "sql_script_git_branch": "main",
+        "children": {"aggregate and insert daily test stats": "on_success"}
+    },
+    {
+        "name": "aggregate and insert daily test stats",
+        "type": "presto",
+        "conn_id": "[@dag-eval presto_conn_id @]",
+        "destination": {
+            "type": "mongodb",
+            "dest_mdb_database": "cedar",
+            "dest_mdb_collection": "historical_test_data",
+            "dest_mdb_conn_info": "[@dag-eval mdb_conn_id @]",
+            "dest_mdb_op": "insert"
+        },
+        "sql_source": "github",
+        "sql_script_conn": "[@dag-eval github_conn_id @]",
+        "sql_script_git_repo": "10gen/dev-prod-etls",
+        "sql_script_name": "src/jobs/dev_prod/materialize_historical_test_data/sql/aggregate_and_insert_daily_test_stats.sql",
+        "sql_script_git_branch": "main",
+        "children": {"nest fields and convert types": "on_success"}
+    },
+    {
+        "name": "nest fields and convert types",
+        "type": "mongodb",
+        "conn_id": "[@dag-eval mdb_conn_id @]",
+        "op": "update",
+        "database": "cedar",
+        "collection": "historical_test_data",
+        "update_condition": { "info.project": null },
+        "update_op": [
+            {
+                "$addFields": {
+                    "info": {
+                        "project": "$project",
+                        "variant": "$variant",
+                        "task_name": "$task_name",
+                        "test_name": "$test_name",
+                        "request_type": "$request_type",
+                        "date": { "$toDate": "$date" }
+                    }
+                }
+            },
+            {
+                "$unset": [
+                    "project",
+                    "variant",
+                    "task_name",
+                    "test_name",
+                    "request_type",
+                    "date"
+                ]
+            }
+        ]
+    }
+]
