@@ -1,0 +1,15 @@
+server:
+  ingress:
+      enabled: true
+      hosts:
+        - argo-server.devprod-tips.staging.corp.mongodb.com
+  sso:
+    redirectUrl: "https://argo-server.devprod-tips.staging.corp.mongodb.com/oauth2/callback"
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 280Mi
+    requests:
+      cpu: 50m
+      memory: 140Mi

@@ -1,0 +1,40 @@
+singleNamespace: true
+createAggregateRoles: false
+controller:
+  clusterWorkflowTemplates:
+    enabled: false
+  rbac:
+    create: false
+  serviceAccount:
+    create: true
+    name: argo
+  containerRuntimeExecutor: emissary
+  workflowDefaults:
+    spec:
+      serviceAccountName:
+        argo-workflow
+server:
+  enabled: true
+  rbac:
+    create: false
+  clusterWorkflowTemplates:
+    enabled: false
+  serviceAccount:
+    create: true
+    name: argo-server
+  extraArgs: [--auth-mode=sso]
+  sso:
+    issuer: "https://corp.mongodb.com/oauth2/default"
+    clientId:
+      name: argo-server-sso
+      key: client-id
+    clientSecret:
+      name: argo-server-sso
+      key: client-secret
+    rbac:
+      enabled: false
+workflow:
+  rbac:
+    create: true
+  serviceAccount:
+    create: true

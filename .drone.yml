@@ -1,3 +1,4 @@
+---
 kind: pipeline
 type: kubernetes
 name: dev-prod-etls
@@ -5,23 +6,81 @@ name: dev-prod-etls
 platform:
   os: linux
 
+staging_trigger: &staging_trigger
+  branch:
+    - staging
+  event:
+    - push
+
+prod_trigger: &prod_trigger
+  branch:
+    - main
+  event:
+    - push
+
 steps:
-  - name: publish-presto-image
-    image: plugins/kaniko-ecr
-    settings:
-      create_repository: true
-      dockerfile: docker-images/presto/Dockerfile
-      registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
-      repo: devprod-tips/${DRONE_REPO_NAME}
-      tags:
-        - git-${DRONE_COMMIT_SHA:0:7}-presto
-        - latest-presto
-      access_key:
-        from_secret: ecr_access_key
-      secret_key:
-        from_secret: ecr_secret_key
-    when:
-      branch:
-        - main
-      event:
-        - push
+# TODO: Uncomment when we have interesting tests.
+#- name: test
+#  image: python:3.9-slim-buster
+#  commands:
+#    - pip3 install --upgrade pip
+#    - pip3 install poetry
+#    - poetry install
+#    - poetry run pytest
+#  when:
+#    branch:
+#      - main
+#      - staging
+#    event:
+#      - push
+#      - pull_request
+
+- name: publish-presto-image
+  image: plugins/kaniko-ecr
+  settings:
+    create_repository: true
+    dockerfile: docker-images/presto/Dockerfile
+    registry: 795250896452.dkr.ecr.us-east-1.amazonaws.com
+    repo: devprod-tips/${DRONE_REPO_NAME}
+    tags:
+      - git-${DRONE_COMMIT_SHA:0:7}-presto
+      - latest-presto
+    access_key:
+      from_secret: ecr_access_key
+    secret_key:
+      from_secret: ecr_secret_key
+  when: *prod_trigger
+
+- name: deploy_staging
+  image: pelotech/drone-helm3
+  settings:
+    chart: argo/argo-workflows
+    chart_version: 0.12.0
+    add_repos: [argo=https://argoproj.github.io/argo-helm]
+    namespace: devprod-tips
+    release: argo-workflows
+    values_files:
+    - deployment/values.yml
+    - deployment/staging.yml
+    skip_crds: true
+    api_server: https://api.staging.corp.mongodb.com
+    kubernetes_token:
+      from_secret: staging_kubernetes_token
+  when: *staging_trigger
+
+- name: deploy_prod
+  image: pelotech/drone-helm3
+  settings:
+    chart: argo/argo-workflows
+    chart_version: 0.12.0
+    add_repos: [argo=https://argoproj.github.io/argo-helm]
+    namespace: devprod-tips
+    release: argo-workflows
+    values_files:
+    - deployment/values.yml
+    - deployment/prod.yml
+    skip_crds: true
+    api_server: https://api.prod.corp.mongodb.com
+    kubernetes_token:
+      from_secret: prod_kubernetes_token
+  when: *prod_trigger
