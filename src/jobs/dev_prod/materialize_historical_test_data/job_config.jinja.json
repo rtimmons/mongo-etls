@@ -17,7 +17,7 @@
         "destination": {
             "type": "mongodb",
             "dest_mdb_database": "cedar",
-            "dest_mdb_collection": "historical_test_data",
+            "dest_mdb_collection": "presto_historical_test_data",
             "dest_mdb_conn_info": "[@dag-eval mdb_conn_id @]",
             "dest_mdb_op": "insert"
         },
@@ -34,8 +34,8 @@
         "conn_id": "[@dag-eval mdb_conn_id @]",
         "op": "update",
         "database": "cedar",
-        "collection": "historical_test_data",
-        "update_condition": { "info.project": null, "info.date": null, "info.task_name": null },
+        "collection": "presto_historical_test_data",
+        "update_condition": { "info.project": null },
         "update_op": [
             {
                 "$addFields": {
