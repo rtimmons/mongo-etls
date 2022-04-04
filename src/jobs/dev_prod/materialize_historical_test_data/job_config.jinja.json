@@ -35,7 +35,7 @@
         "op": "update",
         "database": "cedar",
         "collection": "historical_test_data",
-        "update_condition": { "info.project": null },
+        "update_condition": { "info.project": null, "info.date": null, "info.task_name": null },
         "update_op": [
             {
                 "$addFields": {
