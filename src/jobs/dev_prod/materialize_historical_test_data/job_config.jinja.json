@@ -8,6 +8,16 @@
         "sql_script_git_repo": "10gen/dev-prod-etls",
         "sql_script_name": "src/jobs/dev_prod/materialize_historical_test_data/sql/sync_partition_metadata.sql",
         "sql_script_git_branch": "main",
+        "children": {"delete daily test stats": "on_success"}
+    },
+    {
+        "name": "delete daily test stats",
+        "type": "mongodb",
+        "conn_id": "[@dag-eval mdb_conn_id @]",
+        "op": "remove",
+        "database": "cedar",
+        "collection": "presto_historical_test_data",
+        "remove_condition": {"info.date": "ISODate('[@dag-eval date @]')"},
         "children": {"aggregate and insert daily test stats": "on_success"}
     },
     {
