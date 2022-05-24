@@ -1,0 +1,54 @@
+[
+    {
+        "name": "sync partition metadata",
+        "type": "presto",
+        "conn_id": "[@dag-eval presto_conn_id @]",
+        "sql_source": "github",
+        "sql_script_conn": "[@dag-eval github_conn_id @]",
+        "sql_script_git_repo": "10gen/dev-prod-etls",
+        "sql_script_name": "src/jobs/dev_prod/materialize_daily_test_stats/sql/sync_partition_metadata.sql",
+        "sql_script_git_branch": "main",
+        "children": {"delete daily test stats": "on_success"}
+    },
+    {
+        "name": "delete daily test stats",
+        "type": "presto",
+        "conn_id": "[@dag-eval presto_conn_id @]",
+        "sql_source": "github",
+        "sql_script_conn": "[@dag-eval github_conn_id @]",
+        "sql_script_git_repo": "10gen/dev-prod-etls",
+        "sql_script_name": "src/jobs/dev_prod/materialize_daily_test_stats/sql/delete_daily_test_stats.sql",
+        "sql_script_git_branch": "main",
+        "children": {"materialize daily test stats": "on_success"}
+    },
+    {
+        "name": "materialize daily test stats",
+        "type": "presto",
+        "conn_id": "[@dag-eval presto_conn_id @]",
+        "destination": {
+            "type": "presto_insert",
+            "dest_tgt": "awsdatacatalog.[@dag-eval schema_name @].results__daily_test_stats__intermediate"
+        },
+        "sql_source": "github",
+        "sql_script_conn": "[@dag-eval github_conn_id @]",
+        "sql_script_git_repo": "10gen/dev-prod-etls",
+        "sql_script_name": "src/jobs/dev_prod/materialize_daily_test_stats/sql/materialize_daily_test_stats.sql",
+        "sql_script_git_branch": "main",
+        "children": {"create daily test stats view": "on_success"}
+    },
+    {
+        "name": "create daily test stats view",
+        "type": "presto",
+        "conn_id": "[@dag-eval presto_conn_id @]",
+        "destination": {
+            "type": "presto_view",
+            "dest_tgt": "awsdatacatalog.[@dag-eval schema_name @].v__results__daily_test_stats__v1",
+            "dest_replace": true
+        },
+        "sql_source": "github",
+        "sql_script_conn": "[@dag-eval github_conn_id @]",
+        "sql_script_git_repo": "10gen/dev-prod-etls",
+        "sql_script_name": "src/jobs/dev_prod/materialize_daily_test_stats/sql/daily_test_stats_view.sql",
+        "sql_script_git_branch": "main"
+    }
+]
