@@ -1,6 +1,6 @@
 SELECT  ls."project"                                                                                           AS "project",
         ls."variant"                                                                                           AS "variant",
-        ls."task_name"                                                                                         AS "task_name",
+        COALESCE(ls."display_task_name", ls."task_name")                                                       AS "task_name",
         COALESCE(rs."display_test_name", rs."test_name")                                                       AS "test_name",
         ls."request_type"                                                                                      AS "request_type",
         SUM(IF(rs."status" IN ('pass'              ), 1, 0))                                                   AS "num_pass",
