@@ -1,0 +1,8 @@
+{
+    "app_id": "dev-prod-etls-kffht",
+    "config_version": 20210101,
+    "name": "dev-prod-etls",
+    "location": "US-VA",
+    "provider_region": "aws-us-east-1",
+    "deployment_model": "LOCAL"
+}
