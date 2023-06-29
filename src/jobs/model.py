@@ -169,7 +169,7 @@ class _MarsJobTask:
                 sql_source="config",
                 sql=self._sql_file.parsed_contents(),
                 destination=PrestoTableDestination(
-                    dest_tgt=self._presto_table.dest_tgt,
+                    dest_tgt=self._presto_table.dest_tgt(),
                     dest_replace=True,
                     dest_format="PARQUET",
                 ),

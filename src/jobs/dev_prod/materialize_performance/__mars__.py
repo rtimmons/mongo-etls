@@ -26,3 +26,13 @@ performance__expanded_metrics__versions__raw = _HELPER.add_task(
 
 
 _DAG = _HELPER.extract()
+
+##
+# TODO: Add automated testing to ensure we can
+#       do the below for all _DAG objects.
+#
+# import json
+# assert(_DAG.is_valid())
+# json.dumps(_DAG.to_payload())
+#
+##
